@@ -1,18 +1,21 @@
-"use client";
+﻿"use client";
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { SquareLogo } from "@/components/square-logo";
+import { useAuthModal } from "@/components/auth-modal-context";
 
 const NAV_LINKS = [
-  { label: "METRICS",      href: "#metrics" },
-  { label: "PIPELINE",     href: "#simulator" },
-  { label: "ARCHITECTURE", href: "#architecture" },
-  { label: "TEAM",         href: "#team" },
+  { label: "Metrics",      href: "#metrics" },
+  { label: "Pipeline",     href: "#simulator" },
+  { label: "Architecture", href: "#architecture" },
+  { label: "Team",         href: "#team" },
 ];
 
 export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
+  const { openAuthModal } = useAuthModal();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 48);
@@ -22,56 +25,48 @@ export function Navbar() {
 
   return (
     <header
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+      className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 ${
         scrolled
-          ? "bg-[var(--bg-base)]/90 backdrop-blur-md border-b border-[var(--border-subtle)]"
+          ? "bg-[var(--bg-base)]/90 backdrop-blur-md border-b border-[var(--border-subtle)] shadow-sm"
           : "bg-transparent"
       }`}
     >
-      <div className="max-w-[1400px] mx-auto px-8 h-16 flex items-center justify-between">
+      <div className="max-w-[1400px] mx-auto px-6 lg:px-8 h-20 flex items-center justify-between">
 
-        {/* Brand */}
+        {/* Brand with 2 Squared Icon (Small square inside a big one) */}
         <Link href="/" className="flex items-center gap-3 group">
-          <div className="w-8 h-8 border border-[var(--accent)] flex items-center justify-center relative">
-            <div className="w-3.5 h-3.5 bg-[var(--accent)]" />
+          <div className="w-10 h-10 rounded-2xl bg-[#C4B5FD] text-black flex items-center justify-center font-extrabold shadow-md group-hover:scale-105 transition-transform">
+            <SquareLogo size={18} />
           </div>
-          <span
-            className="text-base font-bold tracking-[0.16em] uppercase text-[var(--text-heading)]"
-            style={{ fontFamily: "var(--font-space-grotesk)" }}
-          >
+          <span className="text-xl font-extrabold tracking-tight text-[var(--text-heading)]">
             PlanLedger
           </span>
         </Link>
 
-        {/* Nav links - Typography requirement: text-sm uppercase tracking-widest font-mono */}
-        <nav className="hidden md:flex items-center gap-10">
+        {/* Nav links */}
+        <nav className="hidden md:flex items-center gap-8 font-semibold text-sm">
           {NAV_LINKS.map((link) => (
             <a
               key={link.label}
               href={link.href}
-              className="nav-link text-sm uppercase tracking-widest font-mono font-medium"
+              className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
             >
               {link.label}
             </a>
           ))}
         </nav>
 
-        {/* CTA & Theme Controls */}
-        <div className="flex items-center gap-4">
-          <span
-            className="hidden lg:block text-xs uppercase tracking-widest font-mono text-[var(--text-muted)]"
-          >
-            ODOO HX 2026
-          </span>
+        {/* Controls */}
+        <div className="flex items-center gap-3">
+          <ThemeToggle variant="pill" />
 
-          <ThemeToggle compact />
-
-          <Link
-            href="/dashboard"
-            className="px-5 py-2 border border-[var(--accent)] bg-transparent text-[var(--accent)] hover:bg-[var(--accent)] hover:text-[var(--bg-base)] transition-all duration-150 text-xs tracking-widest uppercase font-mono font-bold"
+          {/* Clicking asks login/signup via modal */}
+          <button
+            onClick={() => openAuthModal("login")}
+            className="btn-neon px-5 py-2.5 text-xs uppercase tracking-wider font-bold shadow-md cursor-pointer"
           >
-            Terminal
-          </Link>
+            Launch Terminal
+          </button>
         </div>
       </div>
     </header>

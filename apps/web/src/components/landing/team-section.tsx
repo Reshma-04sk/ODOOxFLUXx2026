@@ -1,8 +1,9 @@
-"use client";
+﻿"use client";
 
 import React, { useEffect, useRef } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { Users, ExternalLink, GitFork, CheckCircle2 } from "lucide-react";
 
 if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger);
@@ -11,29 +12,27 @@ if (typeof window !== "undefined") {
 const MEMBERS = [
   {
     role: "M1",
-    tag: "TEAM LEAD / BACKEND",
+    tag: "TEAM LEAD / BACKEND ARCHITECT",
     name: "Reshma Shaik",
     github: "Reshma-04sk",
     scope: "apps/api",
-    color: "var(--text-heading)",
     summary:
       "Repository governance, Django 6 backend architecture, PostgreSQL 17 database guarantees, partial unique indexes, idempotent billing engine, and cloud infrastructure deployment.",
     deliverables: [
-      "PostgreSQL 17 constraints, sequences & ERD model",
+      "PostgreSQL 17 constraints, sequences & ERD schema",
       "Atomic invoice generation & due billing scheduler",
       "Argon2id auth, session security & BOLA protection",
-      "OpenAPI 3.1 schema endpoint — /api/schema/",
+      "OpenAPI 3.1 schema endpoint (/api/schema/)",
     ],
   },
   {
     role: "M2",
-    tag: "FRONTEND LEAD / UX",
+    tag: "FRONTEND LEAD / UX ENGINEER",
     name: "Gayathri Devi G",
     github: "gaayathri-devi-07",
     scope: "apps/web",
-    color: "var(--text-secondary)",
     summary:
-      "Next.js 16 App Router architecture, luxury financial design system, GSAP & Lenis smooth momentum scrolling, customer portal, data tables, and API integration.",
+      "Next.js 16 App Router architecture, luxury financial design system, GSAP & Lenis smooth scrolling, customer portal, data tables, and API integration.",
     deliverables: [
       "Architectural design system & landing page",
       "State machine simulator & snapshot calculation UI",
@@ -71,104 +70,91 @@ export function TeamSection() {
     <section
       ref={sectionRef}
       id="team"
-      className="relative bg-[var(--bg-base)] border-t border-[var(--border-subtle)]"
+      className="relative py-24 bg-[var(--bg-base)] border-t border-[var(--border-subtle)]"
     >
       <div className="absolute inset-0 arch-grid-bg opacity-30 pointer-events-none" />
 
-      {/* Header */}
-      <div className="max-w-[1400px] mx-auto px-8 py-10 border-b border-[var(--border-subtle)] flex items-center justify-between relative z-10">
-        <div className="flex items-center gap-4" style={{ fontFamily: "var(--font-space-mono)" }}>
-          <div className="w-2 h-2 border border-[var(--text-muted)] rotate-45" />
-          <span className="mono-label text-[var(--text-muted)]">TWO-MEMBER MONOREPO DELIVERY</span>
+      <div className="max-w-[1400px] mx-auto px-6 lg:px-8 relative z-10">
+
+        {/* Header */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-16">
+          <div>
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[var(--border-subtle)] bg-[var(--bg-surface)] text-xs font-bold text-[#A78BFA] uppercase tracking-wider mb-4 shadow-sm">
+              <Users className="w-3.5 h-3.5" />
+              <span>Two-Member Core Engineering</span>
+            </div>
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-[var(--text-heading)]">
+              Built by Specialized Leads
+            </h2>
+          </div>
+          <p className="text-sm text-[var(--text-secondary)] max-w-md font-medium leading-relaxed">
+            Engineered exclusively for the Odoo Hackathon 2026. Monorepo architecture with clean separation of backend database guarantees and frontend user experience.
+          </p>
         </div>
-        <span className="mono-label hidden md:block" style={{ fontFamily: "var(--font-space-mono)" }}>
-          ODOO HX 2026 / TEAM
-        </span>
-      </div>
 
-      <div className="max-w-[1400px] mx-auto px-8 py-16 relative z-10">
-        <h2
-          className="text-4xl sm:text-5xl font-bold tracking-[-0.04em] text-[var(--text-heading)] leading-none mb-12"
-          style={{ fontFamily: "var(--font-space-grotesk)" }}
-        >
-          BUILT BY TWO<br />SPECIALIZED LEADS
-        </h2>
-
-        <div className="grid md:grid-cols-2 gap-0 border border-[var(--border-subtle)]">
-          {MEMBERS.map((m, i) => (
+        {/* Team Cards */}
+        <div className="grid md:grid-cols-2 gap-8">
+          {MEMBERS.map((m) => (
             <div
               key={m.role}
-              className={`team-card opacity-0 p-8 flex flex-col gap-6 ${
-                i === 0 ? "border-b md:border-b-0 md:border-r border-[var(--border-subtle)]" : ""
-              }`}
+              className="team-card fintech-card p-8 flex flex-col justify-between"
             >
-              {/* Role header */}
-              <div className="flex items-center justify-between" style={{ fontFamily: "var(--font-space-mono)" }}>
-                <span
-                  className="mono-label border border-[var(--border-subtle)] px-3 py-1"
-                  style={{ color: m.color }}
-                >
-                  {m.role} — {m.tag}
-                </span>
-                <span className="mono-label text-[var(--border-strong)]">{m.scope}</span>
-              </div>
-
-              {/* Name */}
               <div>
-                <h3
-                  className="text-2xl font-bold tracking-[-0.02em] mb-1"
-                  style={{ fontFamily: "var(--font-space-grotesk)", color: m.color }}
-                >
-                  {m.name}
-                </h3>
-                <a
-                  href={`https://github.com/${m.github}`}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="text-[10px] tracking-[0.15em] text-[var(--text-muted)] hover:text-[var(--text-heading)] transition-colors"
-                  style={{ fontFamily: "var(--font-space-mono)" }}
-                >
-                  GITHUB / {m.github.toUpperCase()} ↗
-                </a>
+                {/* Role Header */}
+                <div className="flex items-center justify-between mb-6">
+                  <span className="text-xs font-extrabold tracking-wider px-3 py-1 rounded-full bg-[#C4B5FD]/20 text-[#000000] dark:text-[#C4B5FD] border border-[#C4B5FD]/30">
+                    {m.role} &middot; {m.tag}
+                  </span>
+                  <span className="text-xs font-hash font-bold text-[var(--text-muted)] bg-[var(--bg-elevated)] px-2.5 py-1 rounded-lg border border-[var(--border-subtle)]">
+                    {m.scope}
+                  </span>
+                </div>
+
+                {/* Name & GitHub */}
+                <div className="mb-6">
+                  <h3 className="text-2xl font-extrabold text-[var(--text-heading)] tracking-tight mb-2">
+                    {m.name}
+                  </h3>
+                  <a
+                    href={`https://github.com/${m.github}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-1.5 text-xs font-hash font-semibold text-[#7C3AED] dark:text-[#A78BFA] hover:underline"
+                  >
+                    <span>github.com/{m.github}</span>
+                    <ExternalLink className="w-3.5 h-3.5" />
+                  </a>
+                </div>
+
+                {/* Summary */}
+                <p className="text-xs text-[var(--text-secondary)] font-medium leading-relaxed border-t border-[var(--border-subtle)] pt-4 mb-6">
+                  {m.summary}
+                </p>
+
+                {/* Deliverables */}
+                <div className="border-t border-[var(--border-subtle)] pt-4">
+                  <div className="text-[11px] font-bold font-hash uppercase tracking-wider text-[var(--text-muted)] mb-3">
+                    Key Deliverables
+                  </div>
+                  <ul className="space-y-2.5">
+                    {m.deliverables.map((d, di) => (
+                      <li key={di} className="flex items-start gap-2.5 text-xs text-[var(--text-primary)] font-medium">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
+                        <span>{d}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               </div>
 
-              {/* Summary */}
-              <p
-                className="text-[var(--text-secondary)] text-xs leading-relaxed border-t border-[var(--border-subtle)] pt-4"
-                style={{ fontFamily: "var(--font-space-grotesk)" }}
-              >
-                {m.summary}
-              </p>
-
-              {/* Deliverables */}
-              <div className="border-t border-[var(--border-subtle)] pt-4">
-                <div
-                  className="mono-label text-[var(--border-strong)] mb-3"
-                  style={{ fontFamily: "var(--font-space-mono)" }}
-                >
-                  KEY DELIVERABLES
-                </div>
-                <ul className="space-y-2">
-                  {m.deliverables.map((d, di) => (
-                    <li
-                      key={di}
-                      className="flex items-start gap-3 text-[11px] text-[var(--text-secondary)]"
-                      style={{ fontFamily: "var(--font-space-grotesk)" }}
-                    >
-                      <span
-                        className="shrink-0 text-[9px] text-[var(--text-muted)] mt-0.5"
-                        style={{ fontFamily: "var(--font-space-mono)" }}
-                      >
-                        {String(di + 1).padStart(2, "0")}
-                      </span>
-                      {d}
-                    </li>
-                  ))}
-                </ul>
+              <div className="mt-8 pt-4 border-t border-[var(--border-subtle)] flex items-center justify-between text-xs font-hash text-[var(--text-muted)]">
+                <span>Odoo Hackathon 2026</span>
+                <span className="text-emerald-500 font-bold">100% Monorepo Ready</span>
               </div>
             </div>
           ))}
         </div>
+
       </div>
     </section>
   );

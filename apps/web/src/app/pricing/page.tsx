@@ -1,73 +1,90 @@
-"use client";
+﻿"use client";
 
+import { SquareLogo } from "@/components/square-logo";
 import React, { useState } from "react";
 import Link from "next/link";
-import { Sparkles, CheckCircle, ArrowRight, ArrowLeft } from "lucide-react";
+import { Check, ArrowRight, ArrowLeft } from "lucide-react";
 import { MOCK_PLANS } from "@/services/mock-data";
 import { formatINR } from "@/lib/utils";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 export default function PricingPage() {
   const [billingCycle, setBillingCycle] = useState<"monthly" | "yearly">("monthly");
 
   return (
-    <div className="min-h-screen bg-[#070b12] text-slate-100 selection:bg-blue-500/20 selection:text-blue-200">
-      <nav className="h-20 border-b border-slate-800/80 bg-slate-950/60 backdrop-blur-xl flex items-center justify-between px-8 max-w-7xl mx-auto">
-        <Link href="/" className="flex items-center gap-2.5">
-          <div className="h-9 w-9 rounded-xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-cyan-400 flex items-center justify-center shadow-lg shadow-blue-500/25">
-            <Sparkles className="w-5 h-5 text-white" />
+    <div className="min-h-screen arch-grid-bg text-[var(--text-primary)]">
+      {/* Navbar */}
+      <nav className="h-20 border-b border-[var(--border-subtle)] bg-[var(--bg-surface)]/80 backdrop-blur-md sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-6 lg:px-8 h-full flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-2.5">
+            <div className="w-9 h-9 rounded-2xl bg-[#C4B5FD] text-black flex items-center justify-center font-extrabold shadow-sm">
+              <SquareLogo size={18} />
+            </div>
+            <span className="font-extrabold text-xl tracking-tight text-[var(--text-heading)]">PlanLedger</span>
+          </Link>
+
+          <div className="flex items-center gap-4">
+            <Link
+              href="/"
+              className="inline-flex items-center gap-1.5 text-xs font-semibold text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
+              <span>Back to Home</span>
+            </Link>
+            <ThemeToggle variant="pill" />
+            <Link
+              href="/register"
+              className="btn-neon px-4 py-2 text-xs uppercase tracking-wider font-bold shadow-sm"
+            >
+              Start Free Trial
+            </Link>
           </div>
-          <span className="font-bold text-xl text-white tracking-tight">PlanLedger</span>
-        </Link>
-        <div className="flex items-center gap-4">
-          <Link href="/" className="inline-flex items-center gap-1.5 text-xs text-slate-400 hover:text-white">
-            <ArrowLeft className="w-3.5 h-3.5" />
-            <span>Back to Home</span>
-          </Link>
-          <Link
-            href="/register"
-            className="text-xs font-semibold text-white bg-blue-600 hover:bg-blue-500 px-4 py-2 rounded-lg transition-all"
-          >
-            Start Free Trial
-          </Link>
         </div>
       </nav>
 
-      <main className="max-w-7xl mx-auto px-6 py-20">
+      {/* Main Content */}
+      <main className="max-w-7xl mx-auto px-6 lg:px-8 py-20 relative z-10">
         <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
-          <h1 className="text-4xl md:text-5xl font-extrabold text-white tracking-tight">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-[var(--border-subtle)] bg-[var(--bg-surface)] text-xs font-bold text-[#C4B5FD] uppercase tracking-wider shadow-sm">
+            <span>Production-Grade Architecture</span>
+          </div>
+          <h1 className="text-4xl md:text-5xl font-extrabold text-[var(--text-heading)] tracking-tight">
             Predictable Pricing for High-Growth SaaS
           </h1>
-          <p className="text-slate-400 text-base">
+          <p className="text-[var(--text-secondary)] text-base font-medium">
             Every plan includes idempotent automated billing, 18% GST tax invoices, customer portals, and webhooks.
           </p>
 
           <div className="pt-4 flex items-center justify-center gap-3">
-            <button
-              onClick={() => setBillingCycle("monthly")}
-              className={`px-5 py-2.5 rounded-xl text-xs font-semibold transition-all ${
-                billingCycle === "monthly"
-                  ? "bg-blue-600 text-white shadow-lg shadow-blue-500/25"
-                  : "text-slate-400 hover:text-white bg-slate-900/60"
-              }`}
-            >
-              Monthly Billing
-            </button>
-            <button
-              onClick={() => setBillingCycle("yearly")}
-              className={`px-5 py-2.5 rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5 ${
-                billingCycle === "yearly"
-                  ? "bg-blue-600 text-white shadow-lg shadow-blue-500/25"
-                  : "text-slate-400 hover:text-white bg-slate-900/60"
-              }`}
-            >
-              <span>Annual Billing</span>
-              <span className="text-[10px] bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded-full font-bold">
-                2 Months Free
-              </span>
-            </button>
+            <div className="p-1 rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] inline-flex items-center gap-1 shadow-sm">
+              <button
+                onClick={() => setBillingCycle("monthly")}
+                className={`px-5 py-2 rounded-xl text-xs font-bold transition-all ${
+                  billingCycle === "monthly"
+                    ? "bg-[#C4B5FD] text-black shadow-sm"
+                    : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+                }`}
+              >
+                Monthly Billing
+              </button>
+              <button
+                onClick={() => setBillingCycle("yearly")}
+                className={`px-5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
+                  billingCycle === "yearly"
+                    ? "bg-[#C4B5FD] text-black shadow-sm"
+                    : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+                }`}
+              >
+                <span>Annual Billing</span>
+                <span className="text-[10px] bg-emerald-500 text-white px-2 py-0.5 rounded-full font-bold">
+                  2 Months Free
+                </span>
+              </button>
+            </div>
           </div>
         </div>
 
+        {/* Pricing Cards Grid */}
         <div className="grid md:grid-cols-3 gap-8">
           {MOCK_PLANS.map((plan) => {
             const isGrowth = plan.tier === "growth";
@@ -76,32 +93,36 @@ export default function PricingPage() {
             return (
               <div
                 key={plan.id}
-                className={`glass-card rounded-2xl p-8 flex flex-col justify-between relative transition-all duration-300 ${
-                  isGrowth ? "border-blue-500/50 shadow-2xl shadow-blue-500/20 ring-1 ring-blue-500/30" : ""
+                className={`fintech-card p-8 flex flex-col justify-between relative transition-all duration-300 ${
+                  isGrowth ? "border-[#C4B5FD] shadow-2xl ring-1 ring-[#C4B5FD]/30" : ""
                 }`}
               >
                 {isGrowth && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-[11px] font-bold px-3 py-1 rounded-full uppercase tracking-wider shadow-md">
+                  <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-[#C4B5FD] text-black text-[11px] font-extrabold px-3.5 py-1 rounded-full uppercase tracking-wider shadow-md">
                     Most Popular
                   </div>
                 )}
 
                 <div className="space-y-6">
                   <div>
-                    <h3 className="text-xl font-bold text-white">{plan.name}</h3>
-                    <p className="text-xs text-slate-400 mt-1">{plan.description}</p>
+                    <h2 className="text-xl font-extrabold text-[var(--text-heading)]">{plan.name}</h2>
+                    <p className="text-xs text-[var(--text-secondary)] mt-1 font-medium">{plan.description}</p>
                   </div>
 
                   <div className="flex items-baseline gap-1">
-                    <span className="text-4xl font-extrabold text-white">{formatINR(price)}</span>
-                    <span className="text-xs text-slate-400 font-medium">/{billingCycle === "yearly" ? "yr" : "mo"}</span>
+                    <span className="text-4xl font-extrabold text-[var(--text-heading)] font-hash">{formatINR(price)}</span>
+                    <span className="text-xs text-[var(--text-muted)] font-semibold">
+                      /{billingCycle === "yearly" ? "yr" : "mo"}
+                    </span>
                   </div>
 
-                  <div className="space-y-3 pt-2 border-t border-slate-800">
-                    <div className="text-xs font-semibold text-slate-300 uppercase tracking-wider">Features Included</div>
+                  <div className="space-y-3 pt-4 border-t border-[var(--border-subtle)]">
+                    <div className="text-[11px] font-bold uppercase tracking-wider text-[var(--text-muted)] font-hash">
+                      Features Included
+                    </div>
                     {plan.features.map((feat, i) => (
-                      <div key={i} className="flex items-center gap-2.5 text-xs text-slate-300">
-                        <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0" />
+                      <div key={i} className="flex items-center gap-2.5 text-xs text-[var(--text-secondary)] font-medium">
+                        <Check className="w-4 h-4 text-emerald-500 shrink-0" />
                         <span>{feat}</span>
                       </div>
                     ))}
@@ -111,10 +132,10 @@ export default function PricingPage() {
                 <div className="pt-8">
                   <Link
                     href="/register"
-                    className={`w-full py-3.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-all ${
+                    className={`w-full py-3.5 rounded-2xl text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition-all ${
                       isGrowth
-                        ? "bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-500/25"
-                        : "bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-800"
+                        ? "btn-neon"
+                        : "border border-[var(--border-strong)] bg-[var(--bg-surface)] text-[var(--text-primary)] hover:border-[#C4B5FD]"
                     }`}
                   >
                     <span>Start 14-Day Free Trial</span>

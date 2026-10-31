@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React, { useEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
@@ -31,7 +31,7 @@ const METRICS: Metric[] = [
     prefix: "$",
     suffix: "M+",
     decimals: 1,
-    detail: "Normalized across monthly, annual ÷ 12, weekly × 52/12 cadences",
+    detail: "Normalized across monthly, annual / 12, and weekly * 52/12 cadences",
     tag: "FINANCIAL",
   },
   {
@@ -114,7 +114,7 @@ export function MetricsBand() {
 
       gsap.fromTo(
         sectionRef.current!.querySelectorAll(".metric-card"),
-        { y: 40, opacity: 0 },
+        { y: 30, opacity: 0 },
         {
           y: 0,
           opacity: 1,
@@ -138,65 +138,50 @@ export function MetricsBand() {
       className="relative bg-[var(--bg-surface)] border-y border-[var(--border-subtle)]"
     >
       {/* Fine grid overlay */}
-      <div className="absolute inset-0 arch-grid-fine opacity-30 pointer-events-none" />
+      <div className="absolute inset-0 arch-grid-fine opacity-20 pointer-events-none" />
 
       {/* Section header */}
-      <div className="max-w-[1400px] mx-auto px-8 py-10 border-b border-[var(--border-subtle)] flex items-center justify-between">
-        <div className="flex items-center gap-4" style={{ fontFamily: "var(--font-space-mono)" }}>
-          <div className="w-2 h-2 border border-[var(--text-muted)] rotate-45" />
-          <span className="mono-label text-[var(--text-muted)]">FINANCIAL PERFORMANCE METRICS</span>
+      <div className="max-w-[1400px] mx-auto px-6 lg:px-8 py-8 border-b border-[var(--border-subtle)] flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="w-2.5 h-2.5 rounded-full bg-[#C4B5FD]" />
+          <span className="text-xs font-bold tracking-widest uppercase text-[var(--text-secondary)]">
+            FINANCIAL PERFORMANCE TELEMETRY
+          </span>
         </div>
-        <span className="mono-label text-[var(--border-subtle)] hidden md:block" style={{ fontFamily: "var(--font-space-mono)" }}>
-          SYSTEM / LEDGER / LIVE
+        <span className="text-xs font-hash text-[var(--text-muted)] hidden md:block">
+          POSTGRESQL 17 &middot; ACID ASSURANCE
         </span>
       </div>
 
-      {/* Metrics grid  divided by 1px borders, no border-radius */}
+      {/* Metrics grid */}
       <div className="max-w-[1400px] mx-auto relative z-10">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
           {METRICS.map((metric, i) => (
             <div
               key={metric.id}
-              className={`metric-card opacity-0 p-8 flex flex-col justify-between min-h-[260px] ${
-                i < METRICS.length - 1 ? "border-r-0 sm:border-r border-[var(--border-subtle)]" : ""
-              } ${i >= 2 ? "border-t border-[var(--border-subtle)] lg:border-t-0" : ""} ${
-                i === 1 ? "border-t border-[var(--border-subtle)] sm:border-t-0" : ""
-              }`}
-              style={{ borderRight: i < METRICS.length - 1 ? "1px solid #253745" : "none" }}
+              className={`metric-card p-8 flex flex-col justify-between min-h-[260px] border-b sm:border-b-0 ${
+                i < METRICS.length - 1 ? "lg:border-r border-[var(--border-subtle)]" : ""
+              } ${i % 2 === 0 ? "sm:border-r border-[var(--border-subtle)]" : ""}`}
             >
               {/* Tag */}
-              <div
-                className="flex items-center justify-between mb-6"
-                style={{ fontFamily: "var(--font-space-mono)" }}
-              >
-                <span className="mono-label text-[var(--text-muted)]">{metric.sublabel}</span>
-                <span
-                  className="text-[9px] tracking-[0.15em] border border-[var(--border-subtle)] text-[var(--text-muted)] px-2 py-0.5"
-                >
+              <div className="flex items-center justify-between mb-6">
+                <span className="text-xs font-bold tracking-wider text-[var(--text-muted)] font-hash">{metric.sublabel}</span>
+                <span className="text-[10px] font-bold tracking-wider rounded-md border border-[var(--border-subtle)] bg-[var(--bg-elevated)] text-[var(--text-secondary)] px-2 py-0.5">
                   {metric.tag}
                 </span>
               </div>
 
               {/* Big number */}
-              <div
-                className="text-[clamp(2.5rem,4vw,3.8rem)] font-bold leading-none tracking-[-0.04em] text-[var(--text-heading)] mb-4"
-                style={{ fontFamily: "var(--font-space-grotesk)" }}
-              >
+              <div className="text-4xl sm:text-5xl font-extrabold tracking-tight text-[var(--text-heading)] mb-4 font-hash">
                 <CounterValue metric={metric} triggered={triggered} />
               </div>
 
               {/* Label */}
               <div className="mt-auto">
-                <div
-                  className="text-xs font-semibold text-[var(--text-secondary)] tracking-[0.08em] mb-2 uppercase"
-                  style={{ fontFamily: "var(--font-space-grotesk)" }}
-                >
+                <div className="text-xs font-bold text-[var(--text-secondary)] tracking-wider mb-2 uppercase">
                   {metric.label}
                 </div>
-                <div
-                  className="text-[11px] text-[var(--text-muted)] leading-relaxed border-t border-[var(--border-subtle)] pt-3"
-                  style={{ fontFamily: "var(--font-space-mono)" }}
-                >
+                <div className="text-xs text-[var(--text-muted)] leading-relaxed border-t border-[var(--border-subtle)] pt-3 font-sans-modern">
                   {metric.detail}
                 </div>
               </div>
@@ -207,4 +192,3 @@ export function MetricsBand() {
     </section>
   );
 }
-

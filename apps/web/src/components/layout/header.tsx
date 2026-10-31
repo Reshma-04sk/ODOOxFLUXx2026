@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import { LogOut, Zap, Terminal, RefreshCw, CheckCircle2 } from "lucide-react";
+import { LogOut, Zap, RefreshCw, CheckCircle2 } from "lucide-react";
 import { apiService } from "@/services/api-service";
 import { toast } from "sonner";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -13,8 +13,8 @@ interface HeaderProps {
 }
 
 export function Header({
-  title = "TERMINAL OVERVIEW",
-  subtitle = "POSTGRES 17 SUBSCRIPTION & BILLING LEDGER",
+  title = "Overview",
+  subtitle = "Real-time subscription pulse & ledger metrics",
 }: HeaderProps) {
   const router = useRouter();
   const [isRunningBilling, setIsRunningBilling] = useState(false);
@@ -29,82 +29,75 @@ export function Header({
 
   const handleTriggerBilling = () => {
     setIsRunningBilling(true);
-    toast.loading("Executing Idempotent Billing Engine via PostgreSQL 17...", {
+    toast.loading("Dispatching PostgreSQL 17 Idempotent Billing Engine...", {
       id: "billing-dispatch",
     });
 
     setTimeout(() => {
       setIsRunningBilling(false);
       toast.success(
-        "Billing Cycle Complete: 4 evaluated, 0 duplicates, Hash: BIL-RUN-20261031-OK",
+        "Billing Execution Success: 4 Evaluated, 0 Duplicates (Hash: BIL-20261031-OK)",
         { id: "billing-dispatch" }
       );
-    }, 1200);
+    }, 1100);
   };
 
   return (
-    <header className="h-16 border-b border-[var(--border-subtle)] bg-[var(--bg-surface)] px-8 flex items-center justify-between shrink-0 sticky top-0 z-30">
-      
-      {/* Clean Breadcrumbs & Subtitle */}
-      <div className="flex flex-col">
-        <div className="flex items-center gap-3 font-mono text-xs">
-          <span className="text-[var(--text-muted)] uppercase tracking-widest flex items-center gap-1.5">
-            <Terminal className="w-3.5 h-3.5 text-[var(--accent)]" />
-            PLANLEDGER
-          </span>
-          <span className="text-[var(--border-strong)]">/</span>
-          <span className="text-[var(--text-muted)] uppercase tracking-widest">
-            TERMINAL
-          </span>
-          <span className="text-[var(--border-strong)]">/</span>
-          <span className="text-[var(--text-primary)] uppercase tracking-widest font-bold">
-            {title.toUpperCase()}
-          </span>
-        </div>
-        <span className="font-mono text-[9px] uppercase tracking-widest text-[var(--text-muted)] mt-0.5 hidden sm:block">
-          {subtitle}
-        </span>
-      </div>
-
-      {/* Right Action Controls */}
-      <div className="flex items-center gap-4">
-        {/* PostgreSQL 17 Status Tag */}
-        <div className="hidden xl:flex items-center gap-2 px-3 py-1 border border-[var(--border-subtle)] bg-[var(--bg-elevated)] font-mono text-[10px] tracking-widest uppercase text-[var(--text-secondary)]">
-          <CheckCircle2 className="w-3 h-3 text-emerald-500" />
-          <span>PG17 CONCURRENCY 4 · ACID LOCKED</span>
-        </div>
-
-        {/* Theme Toggle */}
-        <ThemeToggle compact />
-
-        {/* Prominent "Trigger Billing Run" with glowing hover effect */}
-        <button
-          type="button"
-          onClick={handleTriggerBilling}
-          disabled={isRunningBilling}
-          className="relative group px-5 py-2 border border-[var(--accent)] bg-[var(--bg-base)] text-[var(--accent)] hover:bg-[var(--accent)] hover:text-[var(--bg-base)] hover:shadow-[0_0_24px_rgba(173,194,213,0.45)] dark:hover:shadow-[0_0_24px_rgba(173,194,213,0.35)] transition-all duration-150 font-mono text-xs uppercase tracking-widest font-bold flex items-center gap-2 cursor-pointer disabled:opacity-60"
-        >
-          {isRunningBilling ? (
-            <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-          ) : (
-            <Zap className="w-3.5 h-3.5 text-amber-400 group-hover:text-inherit" />
-          )}
-          <span>TRIGGER BILLING RUN</span>
-        </button>
-
-        {/* User Account / Sign Out */}
-        <div className="flex items-center gap-3 pl-3 border-l border-[var(--border-subtle)]">
-          <div className="w-7 h-7 border border-[var(--border-strong)] bg-[var(--bg-elevated)] flex items-center justify-center font-mono text-[10px] font-bold text-[var(--text-primary)]">
-            PL
+    <header className="p-4 pb-0">
+      <div className="fintech-card px-6 py-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        
+        {/* Title & Breadcrumbs */}
+        <div>
+          <div className="flex items-center gap-2 text-xs font-semibold text-[var(--text-muted)]">
+            <span>PlanLedger</span>
+            <span>/</span>
+            <span>Dashboard</span>
+            <span>/</span>
+            <span className="text-[var(--text-primary)] font-bold">{title}</span>
           </div>
+          <h1 className="text-xl font-extrabold text-[var(--text-heading)] tracking-tight mt-0.5">
+            {title}
+          </h1>
+          <p className="text-xs text-[var(--text-muted)] mt-0.5 hidden sm:block">{subtitle}</p>
+        </div>
+
+        {/* Right Controls: Prominent Theme Switch + Neon CTA */}
+        <div className="flex items-center flex-wrap gap-3">
+          
+          {/* Status Badge */}
+          <div className="hidden lg:flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#A78BFA]/15 text-[#7C3AED] dark:text-[#A78BFA] border border-[#A78BFA]/30 text-xs font-bold">
+            <CheckCircle2 className="w-3.5 h-3.5" />
+            <span>PostgreSQL 17 Acid Core</span>
+          </div>
+
+          {/* Prominent Theme Toggle Switch Pill (Creme vs Black) */}
+          <ThemeToggle variant="pill" />
+
+          {/* Vibrant Neon Green Action Button */}
+          <button
+            type="button"
+            onClick={handleTriggerBilling}
+            disabled={isRunningBilling}
+            className="btn-neon px-5 py-2.5 text-xs uppercase tracking-wider flex items-center gap-2 cursor-pointer shadow-md disabled:opacity-50"
+          >
+            {isRunningBilling ? (
+              <RefreshCw className="w-4 h-4 animate-spin text-black" />
+            ) : (
+              <Zap className="w-4 h-4 fill-black text-black" />
+            )}
+            <span>Trigger Billing Run</span>
+          </button>
+
+          {/* User Sign Out */}
           <button
             onClick={handleLogout}
             title="Sign Out"
-            className="p-1.5 text-[var(--text-muted)] hover:text-rose-400 transition-colors cursor-pointer"
+            className="p-2.5 rounded-full border border-[var(--border-subtle)] bg-[var(--bg-elevated)] text-[var(--text-muted)] hover:text-rose-500 hover:border-rose-400 transition-colors cursor-pointer"
           >
             <LogOut className="w-4 h-4" />
           </button>
         </div>
+
       </div>
     </header>
   );

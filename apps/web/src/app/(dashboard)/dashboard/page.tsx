@@ -1,30 +1,34 @@
-"use client";
+﻿"use client";
 
+import { SquareLogo } from "@/components/square-logo";
 import React, { useEffect, useRef } from "react";
 import { DashboardShell } from "@/components/layout/dashboard-shell";
 import { gsap } from "gsap";
 import {
-  TrendingUp,
   CreditCard,
-  Activity,
   ArrowUpRight,
   ExternalLink,
-  Shield,
-  FileCode2,
 } from "lucide-react";
 import { formatINR } from "@/lib/utils";
+import {
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from "recharts";
 
-// Mock Data strictly aligned with PlanLedger's subscription ledger
 const RECENT_SUBSCRIPTIONS = [
   {
     id: "SUB-8091",
-    company: "Acme Corp Infrastructure",
+    company: "Acme Cloud Infrastructure",
     plan: "Enterprise Dedicated",
     amount: 142000,
     status: "ACTIVE",
-    nextBilling: "2026-11-05",
+    nextBilling: "Nov 05, 2026",
     hash: "0x9e4a..b12c",
-    autoRenew: true,
   },
   {
     id: "SUB-8092",
@@ -32,9 +36,8 @@ const RECENT_SUBSCRIPTIONS = [
     plan: "Growth Volume Tier",
     amount: 54000,
     status: "ACTIVE",
-    nextBilling: "2026-11-08",
+    nextBilling: "Nov 08, 2026",
     hash: "0x3f12..a801",
-    autoRenew: true,
   },
   {
     id: "SUB-8093",
@@ -42,9 +45,8 @@ const RECENT_SUBSCRIPTIONS = [
     plan: "Standard Cloud",
     amount: 18500,
     status: "PENDING",
-    nextBilling: "2026-11-10",
+    nextBilling: "Nov 10, 2026",
     hash: "0x7b8c..c992",
-    autoRenew: true,
   },
   {
     id: "SUB-8094",
@@ -52,9 +54,8 @@ const RECENT_SUBSCRIPTIONS = [
     plan: "Institutional Core",
     amount: 285000,
     status: "ACTIVE",
-    nextBilling: "2026-11-12",
+    nextBilling: "Nov 12, 2026",
     hash: "0x11a0..44f0",
-    autoRenew: true,
   },
   {
     id: "SUB-8095",
@@ -62,9 +63,8 @@ const RECENT_SUBSCRIPTIONS = [
     plan: "Scale Platform",
     amount: 42000,
     status: "OVERDUE",
-    nextBilling: "2026-10-28",
+    nextBilling: "Oct 28, 2026",
     hash: "0x5d90..e21a",
-    autoRenew: false,
   },
   {
     id: "SUB-8096",
@@ -72,286 +72,337 @@ const RECENT_SUBSCRIPTIONS = [
     plan: "Enterprise Dedicated",
     amount: 195000,
     status: "ACTIVE",
-    nextBilling: "2026-11-15",
+    nextBilling: "Nov 15, 2026",
     hash: "0x88cc..d419",
-    autoRenew: true,
   },
 ];
 
-export default function DashboardOverviewPage() {
-  const cardsContainerRef = useRef<HTMLDivElement>(null);
-  const mrrNumberRef = useRef<HTMLSpanElement>(null);
-  const arrNumberRef = useRef<HTMLSpanElement>(null);
-  const subsNumberRef = useRef<HTMLSpanElement>(null);
-  const churnNumberRef = useRef<HTMLSpanElement>(null);
+const REVENUE_SERIES = [
+  { month: "May", revenue: 112000, target: 100000 },
+  { month: "Jun", revenue: 121000, target: 115000 },
+  { month: "Jul", revenue: 128000, target: 125000 },
+  { month: "Aug", revenue: 134000, target: 130000 },
+  { month: "Sep", revenue: 138500, target: 135000 },
+  { month: "Oct", revenue: 142850, target: 140000 },
+];
 
-  // Requirement: Dashboard Entry GSAP Stagger + Number Tickers on load
+export default function DashboardOverviewPage() {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const arrRef = useRef<HTMLSpanElement>(null);
+  const mrrRef = useRef<HTMLSpanElement>(null);
+  const subsRef = useRef<HTMLSpanElement>(null);
+  const churnRef = useRef<HTMLSpanElement>(null);
+
   useEffect(() => {
     const ctx = gsap.context(() => {
-      // 1. Stagger load of metric cards: slide up from translateY(20px) with snappy spring easing
-      gsap.from(".terminal-metric-card", {
-        y: 20,
+      // 1. Stagger load of floating cards
+      gsap.from(".fintech-card-stagger", {
+        y: 24,
         opacity: 0,
-        duration: 0.6,
+        duration: 0.65,
         stagger: 0.08,
         ease: "power3.out",
       });
 
-      // 2. Number Tickers animating from 0 to target values on load
-      const mrrObj = { val: 0 };
-      gsap.to(mrrObj, {
-        val: 142850,
+      // 2. Animated Number Tickers
+      const arrCounter = { val: 0 };
+      gsap.to(arrCounter, {
+        val: 1714200,
         duration: 1.6,
         ease: "power2.out",
         onUpdate: () => {
-          if (mrrNumberRef.current) {
-            mrrNumberRef.current.textContent = "$" + Math.round(mrrObj.val).toLocaleString();
+          if (arrRef.current) {
+            arrRef.current.textContent = "$" + Math.round(arrCounter.val).toLocaleString();
           }
         },
       });
 
-      const arrObj = { val: 0 };
-      gsap.to(arrObj, {
-        val: 1714200,
-        duration: 1.8,
+      const mrrCounter = { val: 0 };
+      gsap.to(mrrCounter, {
+        val: 142850,
+        duration: 1.5,
         ease: "power2.out",
         onUpdate: () => {
-          if (arrNumberRef.current) {
-            arrNumberRef.current.textContent = "$" + Math.round(arrObj.val).toLocaleString();
+          if (mrrRef.current) {
+            mrrRef.current.textContent = "$" + Math.round(mrrCounter.val).toLocaleString();
           }
         },
       });
 
-      const subsObj = { val: 0 };
-      gsap.to(subsObj, {
+      const subsCounter = { val: 0 };
+      gsap.to(subsCounter, {
         val: 1284,
         duration: 1.4,
         ease: "power2.out",
         onUpdate: () => {
-          if (subsNumberRef.current) {
-            subsNumberRef.current.textContent = Math.round(subsObj.val).toLocaleString();
+          if (subsRef.current) {
+            subsRef.current.textContent = Math.round(subsCounter.val).toLocaleString();
           }
         },
       });
 
-      const churnObj = { val: 0 };
-      gsap.to(churnObj, {
+      const churnCounter = { val: 0 };
+      gsap.to(churnCounter, {
         val: 0.42,
         duration: 1.2,
         ease: "power2.out",
         onUpdate: () => {
-          if (churnNumberRef.current) {
-            churnNumberRef.current.textContent = churnObj.val.toFixed(2) + "%";
+          if (churnRef.current) {
+            churnRef.current.textContent = churnCounter.val.toFixed(2) + "%";
           }
         },
       });
-    }, cardsContainerRef);
+    }, containerRef);
 
     return () => ctx.revert();
   }, []);
 
   return (
     <DashboardShell
-      title="OPERATIONS TERMINAL"
-      subtitle="REAL-TIME FINANCIAL LEDGER & SUBSCRIPTION STATE MACHINE"
+      title="Financial Overview"
+      subtitle="Real-time subscription ledger pulse and financial performance"
     >
-      <div className="space-y-8" ref={cardsContainerRef}>
+      <div className="space-y-6" ref={containerRef}>
 
-        {/* Telemetry Header Strip */}
-        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 p-4 border border-[var(--border-subtle)] bg-[var(--bg-surface)]">
-          <div className="flex items-center gap-4">
-            <div className="w-10 h-10 border border-[var(--border-strong)] bg-[var(--bg-elevated)] flex items-center justify-center font-mono font-bold text-[var(--accent)]">
-              SYS
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="font-mono text-xs uppercase tracking-widest font-bold text-[var(--text-heading)]">
-                  POSTGRESQL 17 DETERMINISTIC ENGINE ACTIVE
-                </span>
-                <span className="px-2 py-0.5 border border-emerald-500/40 bg-emerald-500/10 font-mono text-[9px] text-emerald-400 font-bold uppercase tracking-widest">
-                  ATOMIC
-                </span>
-              </div>
-              <p className="font-mono text-[11px] text-[var(--text-secondary)] mt-0.5">
-                ISOLATION LEVEL: SERIALIZABLE · IDEMPOTENCY WINDOW: 24H · RECONCILIATION: 0 ERRORS
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3 font-mono text-xs text-[var(--text-muted)]">
-            <span>LAST SYNC: 2026-10-31 15:45:00 UTC</span>
-            <span className="text-[var(--border-strong)]">|</span>
-            <span className="text-emerald-500 flex items-center gap-1 font-semibold">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping inline-block" />
-              CONNECTED
-            </span>
-          </div>
-        </div>
-
-        {/* Metric Cards Grid - Requirement: MRR, Active Subscriptions, ARR, Churn */}
+        {/* Metric Cards - Heavily Rounded Floating FinTech Widgets */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           
-          {/* Card 1: MRR */}
-          <div className="terminal-metric-card border border-[var(--border-subtle)] bg-[var(--bg-surface)] p-6 relative">
-            <div className="absolute top-2 right-2 font-mono text-[9px] text-[var(--text-muted)]">
-              LOC-01 // MRR
+          {/* Card 1: ARR */}
+          <div className="fintech-card fintech-card-stagger p-6 flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <span className="text-xs font-bold uppercase tracking-wider text-[var(--text-muted)]">
+                  Annual Run Rate (ARR)
+                </span>
+                <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-[#C4B5FD]/20 text-black dark:text-[#C4B5FD] border border-[#C4B5FD]/30 flex items-center gap-0.5">
+                  <ArrowUpRight className="w-3.5 h-3.5" />
+                  +14.1%
+                </span>
+              </div>
+              <div className="text-4xl lg:text-5xl font-extrabold tracking-tight text-[var(--text-heading)] mb-2">
+                <span ref={arrRef}>$0</span>
+              </div>
             </div>
-            <div className="font-mono text-xs uppercase tracking-widest text-[var(--text-muted)] mb-3 flex items-center gap-2">
-              <Activity className="w-3.5 h-3.5 text-[var(--accent)]" />
-              MONTHLY RECURRING (MRR)
-            </div>
-            <div className="display-text text-3xl sm:text-4xl font-bold tracking-tight mb-2">
-              <span ref={mrrNumberRef}>$0</span>
-            </div>
-            <div className="flex items-center justify-between font-mono text-[11px] text-[var(--text-secondary)] border-t border-[var(--border-subtle)] pt-3">
-              <span className="text-emerald-500 flex items-center gap-0.5 font-bold">
-                <ArrowUpRight className="w-3 h-3" />
-                +12.4% MoM
-              </span>
-              <span>RUN RATE: $142.8K</span>
-            </div>
-          </div>
-
-          {/* Card 2: Active Subscriptions */}
-          <div className="terminal-metric-card border border-[var(--border-subtle)] bg-[var(--bg-surface)] p-6 relative">
-            <div className="absolute top-2 right-2 font-mono text-[9px] text-[var(--text-muted)]">
-              LOC-02 // SUBS
-            </div>
-            <div className="font-mono text-xs uppercase tracking-widest text-[var(--text-muted)] mb-3 flex items-center gap-2">
-              <CreditCard className="w-3.5 h-3.5 text-[var(--accent)]" />
-              ACTIVE SUBSCRIPTIONS
-            </div>
-            <div className="display-text text-3xl sm:text-4xl font-bold tracking-tight mb-2">
-              <span ref={subsNumberRef}>0</span>
-            </div>
-            <div className="flex items-center justify-between font-mono text-[11px] text-[var(--text-secondary)] border-t border-[var(--border-subtle)] pt-3">
-              <span className="text-emerald-500 flex items-center gap-0.5 font-bold">
-                <ArrowUpRight className="w-3 h-3" />
-                +48 Net Additions
-              </span>
-              <span>100% IDEMPOTENT</span>
+            <div className="pt-4 border-t border-[var(--border-subtle)] flex items-center justify-between text-xs text-[var(--text-secondary)]">
+              <span className="font-semibold">Fiscal 2026 Target</span>
+              <span className="font-bold text-[var(--text-primary)]">$2,000,000</span>
             </div>
           </div>
 
-          {/* Card 3: ARR */}
-          <div className="terminal-metric-card border border-[var(--border-subtle)] bg-[var(--bg-surface)] p-6 relative">
-            <div className="absolute top-2 right-2 font-mono text-[9px] text-[var(--text-muted)]">
-              LOC-03 // ARR
+          {/* Card 2: MRR */}
+          <div className="fintech-card fintech-card-stagger p-6 flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <span className="text-xs font-bold uppercase tracking-wider text-[var(--text-muted)]">
+                  Monthly Recurring (MRR)
+                </span>
+                <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-[#A78BFA]/20 text-[#7C3AED] dark:text-[#A78BFA] border border-[#A78BFA]/30 flex items-center gap-0.5">
+                  <ArrowUpRight className="w-3.5 h-3.5" />
+                  +12.4%
+                </span>
+              </div>
+              <div className="text-4xl lg:text-5xl font-extrabold tracking-tight text-[var(--text-heading)] mb-2">
+                <span ref={mrrRef}>$0</span>
+              </div>
             </div>
-            <div className="font-mono text-xs uppercase tracking-widest text-[var(--text-muted)] mb-3 flex items-center gap-2">
-              <TrendingUp className="w-3.5 h-3.5 text-[var(--accent)]" />
-              ANNUAL RUN RATE (ARR)
+            <div className="pt-4 border-t border-[var(--border-subtle)] flex items-center justify-between text-xs text-[var(--text-secondary)]">
+              <span className="font-semibold">Net New Monthly</span>
+              <span className="font-bold text-[#C4B5FD] dark:text-[#C4B5FD] bg-black px-2 py-0.5 rounded-full">+$15,700</span>
             </div>
-            <div className="display-text text-3xl sm:text-4xl font-bold tracking-tight mb-2">
-              <span ref={arrNumberRef}>$0</span>
+          </div>
+
+          {/* Card 3: Active Subscriptions */}
+          <div className="fintech-card fintech-card-stagger p-6 flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <span className="text-xs font-bold uppercase tracking-wider text-[var(--text-muted)]">
+                  Active Subscribers
+                </span>
+                <div className="w-8 h-8 rounded-full bg-[#C4B5FD]/20 text-black dark:text-[#C4B5FD] flex items-center justify-center">
+                  <CreditCard className="w-4 h-4" />
+                </div>
+              </div>
+              <div className="text-4xl lg:text-5xl font-extrabold tracking-tight text-[var(--text-heading)] mb-2">
+                <span ref={subsRef}>0</span>
+              </div>
             </div>
-            <div className="flex items-center justify-between font-mono text-[11px] text-[var(--text-secondary)] border-t border-[var(--border-subtle)] pt-3">
-              <span className="text-emerald-500 flex items-center gap-0.5 font-bold">
-                <ArrowUpRight className="w-3 h-3" />
-                +14.1% Annualized
-              </span>
-              <span>TARGET: $2.0M</span>
+            <div className="pt-4 border-t border-[var(--border-subtle)] flex items-center justify-between text-xs text-[var(--text-secondary)]">
+              <span className="font-semibold">Renewal Rate</span>
+              <span className="font-bold text-emerald-500">99.58%</span>
             </div>
           </div>
 
           {/* Card 4: Net Churn */}
-          <div className="terminal-metric-card border border-[var(--border-subtle)] bg-[var(--bg-surface)] p-6 relative">
-            <div className="absolute top-2 right-2 font-mono text-[9px] text-[var(--text-muted)]">
-              LOC-04 // CHURN
+          <div className="fintech-card fintech-card-stagger p-6 flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <span className="text-xs font-bold uppercase tracking-wider text-[var(--text-muted)]">
+                  Net Revenue Churn
+                </span>
+                <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-500/15 text-emerald-500 border border-emerald-500/30">
+                  Optimal
+                </span>
+              </div>
+              <div className="text-4xl lg:text-5xl font-extrabold tracking-tight text-[var(--text-heading)] mb-2">
+                <span ref={churnRef}>0.00%</span>
+              </div>
             </div>
-            <div className="font-mono text-xs uppercase tracking-widest text-[var(--text-muted)] mb-3 flex items-center gap-2">
-              <Shield className="w-3.5 h-3.5 text-[var(--accent)]" />
-              NET REVENUE CHURN
-            </div>
-            <div className="display-text text-3xl sm:text-4xl font-bold tracking-tight mb-2">
-              <span ref={churnNumberRef}>0.00%</span>
-            </div>
-            <div className="flex items-center justify-between font-mono text-[11px] text-[var(--text-secondary)] border-t border-[var(--border-subtle)] pt-3">
-              <span className="text-emerald-500 font-bold">
-                BENCHMARK: 2.10%
-              </span>
-              <span>LEAKAGE: 0.00%</span>
+            <div className="pt-4 border-t border-[var(--border-subtle)] flex items-center justify-between text-xs text-[var(--text-secondary)]">
+              <span className="font-semibold">SaaS Benchmark</span>
+              <span className="font-bold text-[var(--text-muted)]">2.10%</span>
             </div>
           </div>
 
         </div>
 
-        {/* Data Table Section - Requirement: Clean border-separated Recent Subscriptions with instant hover inversion */}
-        <div className="border border-[var(--border-subtle)] bg-[var(--bg-surface)]">
-          
-          {/* Table Header Controls */}
-          <div className="p-4 border-b border-[var(--border-subtle)] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <div className="w-2.5 h-2.5 bg-[var(--accent)]" />
-              <h2 className="font-mono text-sm uppercase tracking-widest font-bold text-[var(--text-heading)]">
-                RECENT SUBSCRIPTIONS // AUDIT LEDGER
-              </h2>
+        {/* Revenue Velocity Chart Floating Card */}
+        <div className="fintech-card fintech-card-stagger p-6">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+            <div>
+              <div className="flex items-center gap-2">
+                <h2 className="text-lg font-extrabold text-[var(--text-heading)] tracking-tight">
+                  MRR Trajectory & Collection Velocity
+                </h2>
+                <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-[#C4B5FD]/20 text-black dark:text-[#C4B5FD]">
+                  Live Pulse
+                </span>
+              </div>
+              <p className="text-xs text-[var(--text-muted)] mt-1">
+                Normalized revenue across all billing cadences with PostgreSQL 17 atomic reconciliation
+              </p>
             </div>
-            
-            <div className="flex items-center gap-3 font-mono text-xs">
-              <span className="text-[var(--text-muted)] uppercase tracking-wider">
-                SCHEMA: PUBLIC.SUBSCRIPTIONS_V2
-              </span>
-              <span className="px-2 py-1 border border-[var(--border-subtle)] bg-[var(--bg-elevated)] text-[var(--text-secondary)]">
-                SHOWING 6 OF 1,284
+
+            <div className="flex items-center gap-3 text-xs font-semibold">
+              <div className="flex items-center gap-1.5">
+                <div className="w-3 h-3 rounded-full bg-[#C4B5FD]" />
+                <span>Collected MRR</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <div className="w-3 h-3 rounded-full bg-[#A78BFA]" />
+                <span>Target ARR Pace</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="h-64 w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={REVENUE_SERIES} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="neonGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#C4B5FD" stopOpacity={0.35}/>
+                    <stop offset="95%" stopColor="#C4B5FD" stopOpacity={0.0}/>
+                  </linearGradient>
+                  <linearGradient id="lavenderGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#A78BFA" stopOpacity={0.25}/>
+                    <stop offset="95%" stopColor="#A78BFA" stopOpacity={0.0}/>
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--border-subtle)" vertical={false} />
+                <XAxis dataKey="month" stroke="var(--text-muted)" fontSize={12} tickLine={false} axisLine={false} />
+                <YAxis stroke="var(--text-muted)" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(v) => `$${v / 1000}k`} />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: "var(--bg-surface)",
+                    borderColor: "var(--border-strong)",
+                    borderRadius: "1rem",
+                    boxShadow: "0 10px 25px rgba(0,0,0,0.1)",
+                    color: "var(--text-primary)",
+                    fontWeight: 600,
+                  }}
+                />
+                <Area type="monotone" dataKey="revenue" stroke="#C4B5FD" strokeWidth={3} fillOpacity={1} fill="url(#neonGradient)" />
+                <Area type="monotone" dataKey="target" stroke="#A78BFA" strokeWidth={2} strokeDasharray="4 4" fillOpacity={1} fill="url(#lavenderGradient)" />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* Recent Subscriptions Floating Card */}
+        <div className="fintech-card fintech-card-stagger overflow-hidden">
+          <div className="p-6 pb-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-[var(--border-subtle)]">
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="text-lg font-extrabold text-[var(--text-heading)] tracking-tight">
+                  Recent Subscriptions
+                </h3>
+                <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-stone-200 dark:bg-zinc-800 text-[var(--text-secondary)]">
+                  6 of 1,284
+                </span>
+              </div>
+              <p className="text-xs text-[var(--text-muted)] mt-1">
+                Active B2B contracts governed by deterministic billing state machine
+              </p>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <span className="px-3 py-1.5 rounded-full text-xs font-semibold border border-[var(--border-subtle)] bg-[var(--bg-elevated)] text-[var(--text-secondary)]">
+                Auto-Renew: 98.4%
               </span>
             </div>
           </div>
 
-          {/* Table Container */}
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto p-2">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="border-b border-[var(--border-subtle)] bg-[var(--bg-elevated)] font-mono text-xs uppercase tracking-widest text-[var(--text-muted)]">
-                  <th className="py-3 px-4 border-r border-[var(--border-subtle)]">SUB ID</th>
-                  <th className="py-3 px-4 border-r border-[var(--border-subtle)]">SUBSCRIBER ORGANIZATION</th>
-                  <th className="py-3 px-4 border-r border-[var(--border-subtle)]">PLAN TIER</th>
-                  <th className="py-3 px-4 border-r border-[var(--border-subtle)]">STATUS</th>
-                  <th className="py-3 px-4 border-r border-[var(--border-subtle)] text-right">MRR VALUE</th>
-                  <th className="py-3 px-4 border-r border-[var(--border-subtle)]">NEXT BILLING</th>
-                  <th className="py-3 px-4">TRANSACTION HASH</th>
+                <tr className="text-xs font-bold uppercase tracking-wider text-[var(--text-muted)] border-b border-[var(--border-subtle)]">
+                  <th className="py-3 px-4">Organization</th>
+                  <th className="py-3 px-4">Plan Tier</th>
+                  <th className="py-3 px-4">Status</th>
+                  <th className="py-3 px-4 text-right">Value</th>
+                  <th className="py-3 px-4">Next Billing</th>
+                  <th className="py-3 px-4">Audit Hash</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[var(--border-subtle)] font-mono text-xs">
+              <tbody className="divide-y divide-[var(--border-subtle)] text-sm font-semibold">
                 {RECENT_SUBSCRIPTIONS.map((sub) => {
                   const isOverdue = sub.status === "OVERDUE";
                   const isPending = sub.status === "PENDING";
                   return (
                     <tr
                       key={sub.id}
-                      className="terminal-row-hover cursor-pointer"
+                      className="hover:bg-stone-100/70 dark:hover:bg-zinc-800/50 transition-colors rounded-2xl group cursor-pointer"
                     >
-                      <td className="py-3.5 px-4 border-r border-[var(--border-subtle)] text-[var(--text-muted)] font-semibold">
-                        {sub.id}
+                      <td className="py-4 px-4 font-bold text-[var(--text-primary)]">
+                        <div className="flex items-center gap-2">
+                          <div className="w-8 h-8 rounded-full bg-[var(--bg-elevated)] border border-[var(--border-subtle)] flex items-center justify-center font-bold text-xs text-[var(--text-secondary)]">
+                            {sub.company.slice(0, 2).toUpperCase()}
+                          </div>
+                          <span>{sub.company}</span>
+                        </div>
                       </td>
-                      <td className="py-3.5 px-4 border-r border-[var(--border-subtle)] font-bold text-[var(--text-primary)]">
-                        {sub.company}
-                      </td>
-                      <td className="py-3.5 px-4 border-r border-[var(--border-subtle)] text-[var(--text-secondary)]">
+
+                      <td className="py-4 px-4 text-[var(--text-secondary)]">
                         {sub.plan}
                       </td>
-                      <td className="py-3.5 px-4 border-r border-[var(--border-subtle)]">
+
+                      <td className="py-4 px-4">
                         <span
-                          className={`inline-block px-2 py-0.5 border text-[10px] tracking-widest uppercase font-bold ${
+                          className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold ${
                             isOverdue
-                              ? "border-rose-500/50 bg-rose-500/10 text-rose-400"
+                              ? "bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/30"
                               : isPending
-                              ? "border-amber-500/50 bg-amber-500/10 text-amber-400"
-                              : "border-emerald-500/50 bg-emerald-500/10 text-emerald-400"
+                              ? "bg-[#A78BFA]/20 text-[#7C3AED] dark:text-[#A78BFA] border border-[#A78BFA]/30"
+                              : "bg-[#C4B5FD]/20 text-stone-900 dark:text-[#C4B5FD] border border-[#C4B5FD]/30"
                           }`}
                         >
+                          <span className={`w-1.5 h-1.5 rounded-full ${isOverdue ? "bg-rose-500" : isPending ? "bg-[#A78BFA]" : "bg-[#C4B5FD]"}`} />
                           {sub.status}
                         </span>
                       </td>
-                      <td className="py-3.5 px-4 border-r border-[var(--border-subtle)] text-right font-bold text-[var(--text-primary)]">
+
+                      <td className="py-4 px-4 text-right font-extrabold text-[var(--text-primary)]">
                         {formatINR(sub.amount)}
                       </td>
-                      <td className="py-3.5 px-4 border-r border-[var(--border-subtle)] text-[var(--text-secondary)]">
+
+                      <td className="py-4 px-4 text-[var(--text-secondary)] font-medium">
                         {sub.nextBilling}
                       </td>
-                      <td className="py-3.5 px-4 text-[var(--text-muted)] flex items-center justify-between">
-                        <span>{sub.hash}</span>
-                        <ExternalLink className="w-3 h-3 opacity-60 ml-2" />
+
+                      <td className="py-4 px-4 font-hash text-xs text-[var(--text-muted)] group-hover:text-[var(--text-primary)] transition-colors">
+                        <div className="flex items-center gap-1.5">
+                          <span>{sub.hash}</span>
+                          <ExternalLink className="w-3.5 h-3.5 opacity-50 group-hover:opacity-100" />
+                        </div>
                       </td>
                     </tr>
                   );
@@ -360,17 +411,15 @@ export default function DashboardOverviewPage() {
             </table>
           </div>
 
-          {/* Table Footer */}
-          <div className="p-3 border-t border-[var(--border-subtle)] bg-[var(--bg-elevated)] flex items-center justify-between font-mono text-[11px] text-[var(--text-muted)]">
+          <div className="p-4 border-t border-[var(--border-subtle)] bg-[var(--bg-elevated)] flex items-center justify-between text-xs font-semibold text-[var(--text-muted)]">
             <span className="flex items-center gap-2">
-              <FileCode2 className="w-3.5 h-3.5 text-[var(--accent)]" />
-              TABLE ENGINE: ACID PROTECTED WITH POSTGRESQL SERIALIZABLE LOCKING
+              <SquareLogo size={14} className="text-[#C4B5FD]" />
+              PostgreSQL 17 Deterministic Finite State Machine
             </span>
-            <span className="uppercase tracking-widest">
-              INSTANT HOVER INVERSION ACTIVE
+            <span className="font-hash text-[11px]">
+              ENGINE: ACID SERIALIZABLE (0 DRIFT)
             </span>
           </div>
-
         </div>
 
       </div>

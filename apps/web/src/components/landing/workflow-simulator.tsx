@@ -1,8 +1,9 @@
-"use client";
+﻿"use client";
 
 import React, { useEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { ArrowRight, CheckCircle2, ShieldCheck, Database, Workflow } from "lucide-react";
 
 if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger);
@@ -82,35 +83,19 @@ export function WorkflowSimulator() {
       if (clipPanelRef.current) {
         gsap.fromTo(
           clipPanelRef.current,
-          { clipPath: "polygon(50% 50%, 50% 50%, 50% 50%, 50% 50%)" },
+          { opacity: 0, y: 30 },
           {
-            clipPath: "polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)",
-            ease: "power2.inOut",
+            opacity: 1,
+            y: 0,
+            duration: 0.8,
+            ease: "power2.out",
             scrollTrigger: {
               trigger: sectionRef.current,
-              start: "top 85%",
-              end: "top 30%",
-              scrub: 1.2,
+              start: "top 80%",
             },
           }
         );
       }
-
-      gsap.fromTo(
-        ".sim-step",
-        { x: -24, opacity: 0 },
-        {
-          x: 0,
-          opacity: 1,
-          stagger: 0.1,
-          duration: 0.5,
-          ease: "power2.out",
-          scrollTrigger: {
-            trigger: sectionRef.current,
-            start: "top 70%",
-          },
-        }
-      );
     }, sectionRef);
     return () => ctx.revert();
   }, []);
@@ -121,166 +106,189 @@ export function WorkflowSimulator() {
     <section
       ref={sectionRef}
       id="simulator"
-      className="relative bg-[var(--bg-base)] border-t border-[var(--border-subtle)] overflow-hidden"
+      className="relative py-24 arch-grid-bg border-b border-[var(--border-subtle)]"
     >
-      <div ref={clipPanelRef} className="clip-section">
-        <div className="absolute inset-0 arch-grid-fine opacity-20 pointer-events-none" />
+      <div className="max-w-[1400px] mx-auto px-6 lg:px-8">
 
-        {/* Header */}
-        <div className="max-w-[1400px] mx-auto px-8 py-10 border-b border-[var(--border-subtle)] flex items-center justify-between relative z-10">
-          <div className="flex items-center gap-4" style={{ fontFamily: "var(--font-space-mono)" }}>
-            <div className="w-2 h-2 border border-[var(--text-heading)] rotate-45 bg-[var(--text-heading)]" />
-            <span className="mono-label text-[var(--text-secondary)]">BILLING STATE MACHINE SIMULATOR</span>
+        {/* Section Header */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+          <div>
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[var(--border-subtle)] bg-[var(--bg-surface)] text-xs font-bold text-[#7C3AED] dark:text-[#A78BFA] uppercase tracking-wider mb-4 shadow-sm">
+              <Workflow className="w-3.5 h-3.5" />
+              <span>Interactive Pipeline</span>
+            </div>
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-[var(--text-heading)]">
+              Double-Entry Lifecycle Engine
+            </h2>
           </div>
-          <span className="mono-label text-[var(--border-subtle)] hidden md:block" style={{ fontFamily: "var(--font-space-mono)" }}>
-            NEXT.JS 16 → DJANGO 6 API
-          </span>
+          <p className="text-sm text-[var(--text-secondary)] max-w-md font-medium leading-relaxed">
+            Step through each phase of PlanLedger&apos;s deterministic billing machine. Experience zero-drift calculation, immutable snapshots, and ACID idempotency.
+          </p>
         </div>
 
-        <div className="max-w-[1400px] mx-auto px-8 py-12 relative z-10">
-          <div className="grid lg:grid-cols-12 gap-8">
+        {/* Interactive Workspace */}
+        <div ref={clipPanelRef} className="fintech-card p-6 sm:p-8">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
 
-            {/* Step nav */}
-            <div className="lg:col-span-4 flex flex-col border border-[var(--border-subtle)]">
-              {STEPS.map((s) => (
-                <button
-                  key={s.id}
-                  onClick={() => { setActive(s.id); setPayDone(false); }}
-                  className={`sim-step opacity-0 text-left p-5 border-b border-[var(--border-subtle)] last:border-b-0 transition-all duration-300 ${
-                    active === s.id ? "panel-active" : "hover:bg-[var(--bg-surface)]"
-                  }`}
-                >
-                  <div className="flex items-start justify-between gap-4">
+            {/* Left Steps Navigation */}
+            <div className="lg:col-span-4 flex flex-col gap-3">
+              <div className="text-xs font-bold uppercase tracking-wider text-[var(--text-muted)] mb-1 px-1">
+                Lifecycle Stages
+              </div>
+              {STEPS.map((s) => {
+                const isSelected = active === s.id;
+                return (
+                  <button
+                    key={s.id}
+                    onClick={() => {
+                      setActive(s.id);
+                      setPayDone(false);
+                    }}
+                    className={`text-left p-4 rounded-2xl border transition-all duration-200 flex items-center justify-between ${
+                      isSelected
+                        ? "bg-[var(--bg-elevated)] border-[#C4B5FD] shadow-md ring-1 ring-[#C4B5FD]/30"
+                        : "bg-[var(--bg-surface)] border-[var(--border-subtle)] hover:border-[var(--border-strong)]"
+                    }`}
+                  >
                     <div>
-                      <div
-                        className="mono-label mb-1"
-                        style={{ fontFamily: "var(--font-space-mono)", color: active === s.id ? "var(--text-heading)" : "var(--text-muted)" }}
-                      >
-                        {s.index} — {s.tag}
+                      <div className="text-[11px] font-bold font-hash text-[var(--text-muted)] mb-1">
+                        STAGE {s.index} &middot; {s.tag}
                       </div>
-                      <div
-                        className="text-sm font-bold tracking-[0.06em]"
-                        style={{ fontFamily: "var(--font-space-grotesk)", color: active === s.id ? "var(--text-heading)" : "var(--text-secondary)" }}
-                      >
+                      <div className="text-sm font-extrabold tracking-tight text-[var(--text-heading)]">
                         {s.label}
                       </div>
                     </div>
-                    {active === s.id && <div className="w-1.5 h-1.5 bg-[var(--text-heading)] rounded-full mt-1 shrink-0" />}
-                  </div>
-                </button>
-              ))}
-              <div className="p-4 border-t border-[var(--border-subtle)]">
-                <button
-                  onClick={() => {
-                    const order: StepId[] = ["quote", "subscription", "invoice", "payment"];
-                    const next = (order.indexOf(active) + 1) % order.length;
-                    setActive(order[next]);
-                    setPayDone(false);
-                  }}
-                  className="w-full py-2 border border-[var(--border-subtle)] text-[10px] tracking-[0.15em] uppercase text-[var(--text-muted)] hover:border-[var(--text-heading)] hover:text-[var(--text-heading)] transition-all duration-200"
-                  style={{ fontFamily: "var(--font-space-mono)" }}
-                >
-                  ADVANCE STATE →
-                </button>
-              </div>
+                    {isSelected && (
+                      <span className="w-2.5 h-2.5 rounded-full bg-[#C4B5FD] shadow-[0_0_8px_#C4B5FD]" />
+                    )}
+                  </button>
+                );
+              })}
+
+              <button
+                onClick={() => {
+                  const order: StepId[] = ["quote", "subscription", "invoice", "payment"];
+                  const next = (order.indexOf(active) + 1) % order.length;
+                  setActive(order[next]);
+                  setPayDone(false);
+                }}
+                className="mt-2 w-full py-3 rounded-2xl border border-[var(--border-strong)] bg-[var(--bg-surface)] text-xs font-bold tracking-wider uppercase text-[var(--text-primary)] hover:border-[#C4B5FD] flex items-center justify-center gap-2 transition-all shadow-sm"
+              >
+                <span>Advance State</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
             </div>
 
-            {/* Detail panels */}
+            {/* Right Detail Panels */}
             <div className="lg:col-span-8 flex flex-col gap-6">
 
-              {/* Description */}
-              <div className="border border-[var(--border-subtle)] p-6">
-                <div className="mono-label mb-3 text-[var(--text-muted)]" style={{ fontFamily: "var(--font-space-mono)" }}>
-                  STEP {step.index} / STATE DESCRIPTION
+              {/* Description & DB Operation */}
+              <div className="p-6 rounded-2xl bg-[var(--bg-elevated)] border border-[var(--border-subtle)]">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="text-xs font-bold uppercase tracking-wider text-[var(--text-muted)] font-hash">
+                    STAGE {step.index} &mdash; {step.tag}
+                  </div>
+                  <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-500">
+                    <ShieldCheck className="w-4 h-4" />
+                    <span>ACID Verified</span>
+                  </div>
                 </div>
-                <p className="text-[var(--text-secondary)] text-sm leading-relaxed mb-5" style={{ fontFamily: "var(--font-space-grotesk)" }}>
+
+                <p className="text-[var(--text-secondary)] text-sm font-medium leading-relaxed mb-5">
                   {step.description}
                 </p>
-                <div className="bg-[var(--bg-base)] border border-[var(--border-subtle)] p-4">
-                  <div className="text-[9px] tracking-[0.2em] text-[var(--text-muted)] mb-2 uppercase" style={{ fontFamily: "var(--font-space-mono)" }}>
-                    DB OPERATION
+
+                <div className="rounded-xl bg-[var(--bg-surface)] border border-[var(--border-subtle)] p-4">
+                  <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-[var(--text-muted)] mb-2 font-hash">
+                    <Database className="w-3.5 h-3.5 text-[#A78BFA]" />
+                    <span>PostgreSQL 17 Mutation</span>
                   </div>
-                  <pre className="text-[11px] text-[var(--text-heading)] overflow-x-auto" style={{ fontFamily: "var(--font-space-mono)" }}>
+                  <pre className="text-xs font-hash text-[var(--text-heading)] overflow-x-auto whitespace-pre-wrap">
                     {step.dbOp}
                   </pre>
                 </div>
               </div>
 
-              {/* Invoice snapshot */}
-              <div className="border border-[var(--border-subtle)]">
-                <div className="p-5 border-b border-[var(--border-subtle)] flex items-center justify-between">
+              {/* Immutable Snapshot Card */}
+              <div className="rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] overflow-hidden shadow-sm">
+                <div className="p-5 border-b border-[var(--border-subtle)] bg-[var(--bg-elevated)]/50 flex items-center justify-between">
                   <div>
-                    <div className="mono-label text-[var(--text-muted)]" style={{ fontFamily: "var(--font-space-mono)" }}>INVOICE SNAPSHOT</div>
-                    <div className="text-sm font-bold text-[var(--text-heading)] mt-1" style={{ fontFamily: "var(--font-space-grotesk)" }}>
-                      {active === "quote" && "QT/2026/00042"}
-                      {active === "subscription" && "SUB/2026/00042"}
-                      {active === "invoice" && "INV/2026/00108"}
-                      {active === "payment" && "PAY/2026/00094"}
+                    <div className="text-xs font-bold font-hash text-[var(--text-muted)]">SNAPSHOT REFERENCE</div>
+                    <div className="text-base font-extrabold text-[var(--text-heading)] font-hash mt-0.5">
+                      {active === "quote" && "QT-2026-00042"}
+                      {active === "subscription" && "SUB-2026-00042"}
+                      {active === "invoice" && "INV-2026-00108"}
+                      {active === "payment" && "PAY-2026-00094"}
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="mono-label text-[var(--text-muted)]" style={{ fontFamily: "var(--font-space-mono)" }}>TOTAL</div>
-                    <div className="text-lg font-bold text-[var(--text-heading)] mt-1" style={{ fontFamily: "var(--font-space-grotesk)" }}>
+                    <div className="text-xs font-bold font-hash text-[var(--text-muted)]">COMPUTED TOTAL</div>
+                    <div className="text-xl font-extrabold text-[var(--text-heading)] font-hash mt-0.5">
                       {FMT_INR(total)}
                     </div>
                   </div>
                 </div>
 
-                <div className="divide-y divide-[#253745]">
-                  <div className="px-5 py-3 flex justify-between text-xs">
-                    <span className="text-[var(--text-secondary)]" style={{ fontFamily: "var(--font-space-grotesk)" }}>PlanLedger Enterprise Subscription</span>
-                    <span className="text-[var(--text-heading)]" style={{ fontFamily: "var(--font-space-mono)" }}>&#8377;{BASE.toFixed(2)}</span>
+                <div className="divide-y divide-[var(--border-subtle)]">
+                  <div className="px-5 py-3 flex justify-between text-xs font-medium">
+                    <span className="text-[var(--text-secondary)]">PlanLedger Enterprise Base</span>
+                    <span className="font-hash text-[var(--text-heading)] font-bold">{FMT_INR(BASE)}</span>
                   </div>
-                  <div className="px-5 py-3 flex justify-between text-xs">
-                    <span className="text-[var(--text-secondary)]" style={{ fontFamily: "var(--font-space-grotesk)" }}>Attribute Surcharge (Brand)</span>
-                    <span className="text-[var(--text-heading)]" style={{ fontFamily: "var(--font-space-mono)" }}>+&#8377;{SURCHARGE.toFixed(2)}</span>
+                  <div className="px-5 py-3 flex justify-between text-xs font-medium">
+                    <span className="text-[var(--text-secondary)]">Attribute Surcharge (Custom Brand)</span>
+                    <span className="font-hash text-[var(--text-heading)] font-bold">+{FMT_INR(SURCHARGE)}</span>
                   </div>
                   {discount && (
-                    <div className="px-5 py-3 flex justify-between text-xs">
-                      <span className="text-[var(--text-heading)]" style={{ fontFamily: "var(--font-space-grotesk)" }}>Discount: HACKATHON2026 (15%)</span>
-                      <span className="text-[var(--text-heading)]" style={{ fontFamily: "var(--font-space-mono)" }}>-&#8377;{((BASE + SURCHARGE) * DISC_PCT).toFixed(2)}</span>
+                    <div className="px-5 py-3 flex justify-between text-xs font-medium bg-[#C4B5FD]/10">
+                      <span className="text-[#000000] dark:text-[#C4B5FD] font-bold">Discount: HACKATHON2026 (-15%)</span>
+                      <span className="font-hash text-[#000000] dark:text-[#C4B5FD] font-bold">
+                        -{FMT_INR((BASE + SURCHARGE) * DISC_PCT)}
+                      </span>
                     </div>
                   )}
-                  <div className="px-5 py-3 flex justify-between text-xs">
-                    <span className="text-[var(--text-muted)]" style={{ fontFamily: "var(--font-space-mono)" }}>GST 18% — Decimal(ROUND_HALF_UP)</span>
-                    <span className="text-[var(--text-secondary)]" style={{ fontFamily: "var(--font-space-mono)" }}>+&#8377;{tax.toFixed(2)}</span>
+                  <div className="px-5 py-3 flex justify-between text-xs font-medium">
+                    <span className="text-[var(--text-muted)]">GST (18% via Decimal ROUND_HALF_UP)</span>
+                    <span className="font-hash text-[var(--text-secondary)]">+{FMT_INR(tax)}</span>
                   </div>
                 </div>
 
-                <div className="px-5 py-4 border-t border-[var(--border-subtle)] flex items-center gap-4 flex-wrap">
+                <div className="p-4 border-t border-[var(--border-subtle)] flex items-center gap-3 flex-wrap bg-[var(--bg-elevated)]/30">
                   <button
                     onClick={() => setDiscount((p) => !p)}
-                    className={`text-[10px] tracking-[0.12em] uppercase px-3 py-1.5 border transition-all duration-200 ${
+                    className={`text-xs font-bold px-3.5 py-2 rounded-xl transition-all ${
                       discount
-                        ? "border-[var(--text-heading)] text-[var(--text-heading)]"
-                        : "border-[var(--border-subtle)] text-[var(--text-muted)] hover:border-[var(--text-muted)]"
+                        ? "bg-[#C4B5FD] text-black shadow-sm"
+                        : "border border-[var(--border-strong)] bg-[var(--bg-surface)] text-[var(--text-primary)] hover:border-[#C4B5FD]"
                     }`}
-                    style={{ fontFamily: "var(--font-space-mono)" }}
                   >
-                    {discount ? "✓ DISCOUNT APPLIED" : "APPLY HACKATHON2026"}
+                    {discount ? "✓ 15% DISCOUNT ACTIVE" : "+ APPLY HACKATHON2026"}
                   </button>
+
                   {active === "payment" && (
                     <button
                       onClick={() => setPayDone((p) => !p)}
-                      className={`text-[10px] tracking-[0.12em] uppercase px-3 py-1.5 border transition-all duration-200 ${
+                      className={`text-xs font-bold px-3.5 py-2 rounded-xl transition-all ${
                         payDone
-                          ? "border-[var(--text-heading)] text-[var(--bg-base)] bg-[var(--text-heading)]"
-                          : "border-[var(--border-subtle)] text-[var(--text-muted)] hover:border-[var(--text-heading)]"
+                          ? "bg-emerald-500 text-white shadow-sm"
+                          : "bg-[#A78BFA] text-black hover:opacity-90"
                       }`}
-                      style={{ fontFamily: "var(--font-space-mono)" }}
                     >
-                      {payDone ? "✓ SETTLED" : "RECONCILE PAYMENT"}
+                      {payDone ? "✓ RECONCILED & SETTLED" : "RECONCILE PAYMENT"}
                     </button>
                   )}
-                  <div className="ml-auto text-[10px] text-[var(--text-muted)] flex items-center gap-2" style={{ fontFamily: "var(--font-space-mono)" }}>
-                    <div className="w-1.5 h-1.5 bg-[var(--text-heading)] rounded-full animate-pulse" />
-                    ACID SAFE
+
+                  <div className="ml-auto text-xs font-hash text-[var(--text-muted)] flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                    <span>0.000% Floating Drift</span>
                   </div>
                 </div>
               </div>
+
             </div>
+
           </div>
         </div>
+
       </div>
     </section>
   );

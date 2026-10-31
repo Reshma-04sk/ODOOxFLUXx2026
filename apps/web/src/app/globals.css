@@ -1,60 +1,66 @@
-@import "tailwindcss";
+﻿@import "tailwindcss";
 @source "../..";
 @source "..";
 @source ".";
 
 /* ============================================================
-   PLANLEDGER GLOBAL THEME SYSTEM
-   Strict architectural design tokens for Dark (Starry Night) & Light
+   PLANLEDGER PASTEL PURPLE (LAVENDER) FINTECH DESIGN SYSTEM
+   Light: Warm Creme (#FDFBF7) with Stark Black Grid Lines
+   Dark:  Pitch Black (#000000) with Subtle Gray Grid Lines
+   Accent: Pastel Purple / Lavender (#C4B5FD)
    ============================================================ */
 :root, .light {
-  /* Crisp Architectural Light Mode */
-  --bg-base:        #F8FAFC;
-  --bg-surface:     #FFFFFF;
-  --bg-elevated:    #F1F5F9;
-  --border-subtle:  #E2E8F0;
-  --border-strong:  #CBD5E1;
+  /* Warm & High Contrast Light Mode */
+  --bg-base:         #FDFBF7; /* Soft, warm Creme / Ivory */
+  --bg-surface:      #FFFFFF; /* Clean white cards */
+  --bg-elevated:     #F4F0E8; /* Light warm surface */
+  --border-subtle:   #E7E3D8;
+  --border-strong:   #D5CFC2;
 
   /* Typography */
-  --text-primary:   #020617;
-  --text-heading:   #020617;
-  --text-secondary: #475569;
-  --text-muted:     #64748B;
+  --text-primary:    #000000; /* Pure black text */
+  --text-heading:    #000000;
+  --text-secondary:  #44403C; /* Warm dark gray */
+  --text-muted:      #78716C;
 
-  /* Accent & Grids */
-  --accent:         #2563EB;
-  --accent-dim:     #94A3B8;
-  --grid-line:      #E2E8F0;
-  --grid-dot:       #CBD5E1;
+  /* FinTech Accents: Pastel Purple / Lavender */
+  --accent-neon:     #C4B5FD; /* Pastel Purple / Lavender */
+  --accent-lavender: #C4B5FD; /* Soft Lavender */
+  --accent:          #7C3AED;
 
-  /* Instant Inversion for Trading Terminal Aesthetic */
-  --invert-bg:      #020617;
-  --invert-text:    #F8FAFC;
+  /* High-Contrast Grid: Stark solid black lines against warm creme */
+  --grid-line:       rgba(0, 0, 0, 0.16);
+  --grid-dot:        rgba(0, 0, 0, 0.28);
+  
+  /* Floating Card Drop Shadows */
+  --card-shadow:     0 12px 32px -4px rgba(28, 25, 23, 0.08), 0 4px 12px -2px rgba(28, 25, 23, 0.04);
 }
 
 .dark {
-  /* Starry Night Dark Mode */
-  --bg-base:        #030712;
-  --bg-surface:     #0B132B;
-  --bg-elevated:    #0F172A;
-  --border-subtle:  #1E293B;
-  --border-strong:  #334155;
+  /* Pitch Black Dark Mode */
+  --bg-base:         #000000; /* Pure True Black */
+  --bg-surface:      #111111; /* Very dark gray */
+  --bg-elevated:     #1A1A1A;
+  --border-subtle:   #262626;
+  --border-strong:   #333333;
 
   /* Typography */
-  --text-primary:   #F8FAFC;
-  --text-heading:   #F8FAFC;
-  --text-secondary: #94A3B8;
-  --text-muted:     #64748B;
+  --text-primary:    #FFFFFF; /* Bright white text */
+  --text-heading:    #FFFFFF;
+  --text-secondary:  #A1A1AA;
+  --text-muted:      #71717A;
 
-  /* Accent & Grids */
-  --accent:         #ADC2D5;
-  --accent-dim:     #5A7896;
-  --grid-line:      #1E293B;
-  --grid-dot:       #1E293B;
+  /* FinTech Accents: Pastel Purple / Lavender */
+  --accent-neon:     #C4B5FD; /* Pastel Purple / Lavender */
+  --accent-lavender: #C4B5FD; /* Soft Lavender */
+  --accent:          #C4B5FD;
 
-  /* Instant Inversion for Trading Terminal Aesthetic */
-  --invert-bg:      #F8FAFC;
-  --invert-text:    #030712;
+  /* Subtle Dark Gray Grid: subtle against pure black */
+  --grid-line:       rgba(255, 255, 255, 0.10);
+  --grid-dot:        rgba(255, 255, 255, 0.18);
+
+  /* Deep Shadow */
+  --card-shadow:     0 16px 40px -8px rgba(0, 0, 0, 0.85);
 }
 
 /* ============================================================
@@ -84,20 +90,21 @@ body {
   background-color: var(--bg-base);
   color: var(--text-primary);
   overflow-x: hidden;
-  font-feature-settings: "ss01", "ss02", "cv01";
-  transition: background-color 0.2s ease, color 0.2s ease;
+  font-family: var(--font-sans), system-ui, -apple-system, sans-serif;
+  transition: background-color 0.25s ease, color 0.25s ease;
 }
 
 /* ============================================================
-   ARCHITECTURAL GRID BACKGROUND
-   Single-pixel structural lines with crosshair coordinate dots
+   ARCHITECTURAL BACKGROUND GRID
+   Light: Solid dark/black lines against warm creme
+   Dark:  Subtle dark lines against pitch black
    ============================================================ */
 .arch-grid-bg {
   background-color: var(--bg-base);
   background-image:
     linear-gradient(to right,  var(--grid-line) 1px, transparent 1px),
     linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
-  background-size: 80px 80px;
+  background-size: 56px 56px;
   position: relative;
 }
 
@@ -105,12 +112,12 @@ body {
   content: "";
   position: absolute;
   inset: 0;
-  background-image: radial-gradient(circle, var(--grid-dot) 1px, transparent 1px);
-  background-size: 80px 80px;
+  background-image: radial-gradient(circle, var(--grid-dot) 1.2px, transparent 1.2px);
+  background-size: 56px 56px;
   background-position: -1px -1px;
   pointer-events: none;
   z-index: 0;
-  opacity: 0.6;
+  opacity: 0.8;
 }
 
 .arch-grid-fine {
@@ -121,169 +128,65 @@ body {
 }
 
 /* ============================================================
-   STRUCTURAL PANELS (0px Border Radius)
+   ROUNDED FINTECH CARDS
+   Heavily rounded (rounded-3xl / rounded-2xl), soft drop shadows
    ============================================================ */
-.panel {
+.fintech-card {
   background-color: var(--bg-surface);
   border: 1px solid var(--border-subtle);
-  border-radius: 0px !important;
+  border-radius: 1.5rem; /* rounded-3xl */
+  box-shadow: var(--card-shadow);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+.fintech-card:hover {
+  border-color: var(--border-strong);
 }
 
-.panel-elevated {
+.fintech-card-subtle {
   background-color: var(--bg-elevated);
   border: 1px solid var(--border-subtle);
-  border-radius: 0px !important;
-}
-
-.panel-highlight {
-  background-color: var(--bg-elevated);
-  border: 1px solid var(--border-strong);
-  border-radius: 0px !important;
-}
-
-.panel-active {
-  background-color: var(--bg-surface);
-  border: 1px solid var(--accent);
-  border-radius: 0px !important;
+  border-radius: 1rem; /* rounded-2xl */
 }
 
 /* ============================================================
-   TRADING TERMINAL INSTANT HOVER INVERSION
+   BUTTONS & ACCENTS (Pastel Purple / Lavender)
    ============================================================ */
-.terminal-row-hover {
-  transition: none !important;
+.btn-neon,
+.btn-lavender {
+  background-color: #C4B5FD;
+  color: #000000;
+  font-weight: 700;
+  border-radius: 1rem;
+  transition: all 0.2s ease;
 }
-.terminal-row-hover:hover {
-  background-color: var(--invert-bg) !important;
-  color: var(--invert-text) !important;
-}
-.terminal-row-hover:hover * {
-  color: var(--invert-text) !important;
-  border-color: var(--invert-text) !important;
-}
-
-.terminal-link-hover {
-  transition: none !important;
-}
-.terminal-link-hover:hover {
-  background-color: var(--invert-bg) !important;
-  color: var(--invert-text) !important;
+.btn-neon:hover,
+.btn-lavender:hover {
+  filter: brightness(1.06);
+  box-shadow: 0 0 25px rgba(196, 181, 253, 0.55);
+  transform: translateY(-1px);
 }
 
 /* ============================================================
    TYPOGRAPHY UTILITIES
    ============================================================ */
-.display-text {
-  font-family: var(--font-space-grotesk), var(--font-geist-sans), system-ui, sans-serif;
-  font-weight: 700;
-  letter-spacing: -0.03em;
-  color: var(--text-heading);
+.font-sans-modern {
+  font-family: var(--font-sans), system-ui, -apple-system, sans-serif;
 }
 
-.mono-label {
-  font-family: var(--font-space-mono), var(--font-geist-mono), monospace;
-  font-size: 0.875rem; /* text-sm */
-  letter-spacing: 0.1em; /* tracking-widest */
-  text-transform: uppercase;
-  color: var(--text-secondary);
-}
-
-.mono-data {
-  font-family: var(--font-space-mono), var(--font-geist-mono), monospace;
+.font-hash {
+  font-family: var(--font-mono), monospace;
   font-variant-numeric: tabular-nums;
 }
 
 /* ============================================================
-   GSAP MASK REVEAL
+   SCROLLBAR & SELECTION
    ============================================================ */
-.word-mask {
-  overflow: hidden;
-  display: inline-block;
-  line-height: 1.1;
-}
-
-.word-inner {
-  display: inline-block;
-  transform: translateY(105%);
-  will-change: transform;
-}
-
-/* ============================================================
-   CLIP-PATH TRANSITIONS
-   ============================================================ */
-.clip-section {
-  clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
-  will-change: clip-path;
-}
-
-/* ============================================================
-   SCROLLBAR
-   ============================================================ */
-::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: var(--bg-base); }
-::-webkit-scrollbar-thumb { background: var(--border-subtle); }
+::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 9999px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
 
-/* ============================================================
-   SELECTION
-   ============================================================ */
 ::selection {
-  background: var(--accent);
-  color: var(--bg-base);
+  background: #C4B5FD;
+  color: #000000;
 }
-
-/* ============================================================
-   SVG TOPOGRAPHIC DRIFT
-   ============================================================ */
-@keyframes topo-drift {
-  0%   { transform: translateY(0px); }
-  50%  { transform: translateY(-12px); }
-  100% { transform: translateY(0px); }
-}
-.topo-animate {
-  animation: topo-drift 18s ease-in-out infinite;
-}
-
-/* ============================================================
-   NAVBAR LINK UNDERLINE
-   ============================================================ */
-.nav-link {
-  position: relative;
-  color: var(--text-secondary);
-  transition: color 0.15s ease;
-}
-.nav-link::after {
-  content: "";
-  position: absolute;
-  bottom: -2px;
-  left: 0;
-  width: 0;
-  height: 1px;
-  background: var(--accent);
-  transition: width 0.2s ease;
-}
-.nav-link:hover { color: var(--text-primary); }
-.nav-link:hover::after { width: 100%; }
-
-/* Step active tab */
-.step-tab {
-  position: relative;
-  padding-bottom: 8px;
-  color: var(--text-muted);
-  transition: color 0.2s;
-  cursor: pointer;
-}
-.step-tab.active {
-  color: var(--accent);
-}
-.step-tab::after {
-  content: "";
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 0;
-  height: 1px;
-  background: var(--accent);
-  transition: width 0.25s ease;
-}
-.step-tab.active::after { width: 100%; }

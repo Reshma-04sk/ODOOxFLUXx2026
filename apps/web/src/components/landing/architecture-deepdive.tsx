@@ -1,8 +1,9 @@
-"use client";
+﻿"use client";
 
 import React, { useEffect, useRef } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { Layers, ShieldCheck, Terminal, Server, Database, Code2 } from "lucide-react";
 
 if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger);
@@ -34,7 +35,7 @@ const DB_GUARANTEES = [
     code: "PG-04",
     title: "STATE MACHINE ENFORCEMENT",
     constraint: "CHECK constraint on status column",
-    body: "Subscription and invoice status transitions are restricted by a PostgreSQL CHECK constraint. Invalid state transitions (e.g. paid → active) are rejected at the DB layer, not just the API.",
+    body: "Subscription and invoice status transitions are restricted by a PostgreSQL CHECK constraint. Invalid state transitions (e.g. paid -> active) are rejected at the DB layer, not just the API.",
     sql: "ALTER TABLE subscriptions\n  ADD CONSTRAINT valid_status\n  CHECK (status IN ('trial','active','paused',\n    'cancelled','expired'));",
   },
   {
@@ -46,7 +47,7 @@ const DB_GUARANTEES = [
   },
   {
     code: "PG-06",
-    title: "SECURITY — ARGON2 + BOLA",
+    title: "SECURITY: ARGON2 + BOLA",
     constraint: "Argon2id password hashing, row-level filters",
     body: "Passwords hashed with Argon2id (memory-hard). All subscription/invoice queries are tenant-scoped by user FK — cross-tenant data access is structurally prevented at the ORM layer.",
     sql: "queryset = Invoice.objects.filter(\n  subscription__customer__user=request.user\n)  # BOLA protection: row-level isolation",
@@ -54,10 +55,10 @@ const DB_GUARANTEES = [
 ];
 
 const ARCH_LAYERS = [
-  { layer: "PRESENTATION", tech: "Next.js 16 / App Router", detail: "apps/web — SSR + Static pages, TanStack Query, Lenis + GSAP" },
-  { layer: "API GATEWAY",  tech: "same-origin /api/* rewrite", detail: "Next.js proxies /api/* to Django — no CORS, single domain" },
-  { layer: "BUSINESS",     tech: "Django 6 + DRF", detail: "apps/api — Billing engine, state machine, OpenAPI 3.1 schema" },
-  { layer: "DATA",         tech: "PostgreSQL 17 (Neon)", detail: "apps/api — Partial indexes, FK chains, CHECK constraints" },
+  { icon: Code2, layer: "PRESENTATION", tech: "Next.js 16 / App Router", detail: "apps/web — SSR + Static pages, TanStack Query, Lenis + GSAP, Neon FinTech theme" },
+  { icon: Terminal, layer: "API GATEWAY", tech: "same-origin /api/* rewrite", detail: "Next.js proxies /api/* to Django — zero CORS issues, unified origin" },
+  { icon: Server, layer: "BUSINESS ENGINE", tech: "Django 6 + DRF", detail: "apps/api — Idempotent billing engine, state machine, OpenAPI 3.1 schema" },
+  { icon: Database, layer: "DATA PERSISTENCE", tech: "PostgreSQL 17 (Neon)", detail: "apps/api — Partial unique indexes, FK chains, CHECK constraints" },
 ];
 
 export function ArchitectureDeepdive() {
@@ -67,32 +68,16 @@ export function ArchitectureDeepdive() {
     const ctx = gsap.context(() => {
       gsap.fromTo(
         ".guarantee-row",
-        { x: -20, opacity: 0 },
-        {
-          x: 0,
-          opacity: 1,
-          stagger: 0.07,
-          duration: 0.55,
-          ease: "power2.out",
-          scrollTrigger: {
-            trigger: sectionRef.current,
-            start: "top 72%",
-          },
-        }
-      );
-
-      gsap.fromTo(
-        ".arch-layer",
-        { y: 16, opacity: 0 },
+        { y: 20, opacity: 0 },
         {
           y: 0,
           opacity: 1,
           stagger: 0.08,
-          duration: 0.5,
+          duration: 0.6,
           ease: "power2.out",
           scrollTrigger: {
-            trigger: ".arch-layers-container",
-            start: "top 80%",
+            trigger: sectionRef.current,
+            start: "top 75%",
           },
         }
       );
@@ -104,89 +89,62 @@ export function ArchitectureDeepdive() {
     <section
       ref={sectionRef}
       id="architecture"
-      className="relative bg-[var(--bg-surface)] border-t border-[var(--border-subtle)]"
+      className="relative py-24 bg-[var(--bg-surface)] border-t border-[var(--border-subtle)]"
     >
       <div className="absolute inset-0 arch-grid-fine opacity-15 pointer-events-none" />
 
-      {/* ── Header ── */}
-      <div className="max-w-[1400px] mx-auto px-8 py-10 border-b border-[var(--border-subtle)] flex items-start md:items-center justify-between gap-4 relative z-10 flex-wrap">
+      {/* Header */}
+      <div className="max-w-[1400px] mx-auto px-6 lg:px-8 mb-16 relative z-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
-          <div className="flex items-center gap-4 mb-2" style={{ fontFamily: "var(--font-space-mono)" }}>
-            <div className="w-2 h-2 border border-[var(--text-muted)] rotate-45" />
-            <span className="mono-label text-[var(--text-muted)]">TECHNICAL ARCHITECTURE</span>
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[var(--border-subtle)] bg-[var(--bg-elevated)] text-xs font-bold text-[#A78BFA] uppercase tracking-wider mb-4 shadow-sm">
+            <ShieldCheck className="w-3.5 h-3.5" />
+            <span>Technical Deep Dive</span>
           </div>
-          <h2
-            className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-[-0.04em] text-[var(--text-heading)] leading-none"
-            style={{ fontFamily: "var(--font-space-grotesk)" }}
-          >
-            DATABASE GUARANTEES
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-[var(--text-heading)]">
+            PostgreSQL 17 Database Guarantees
           </h2>
         </div>
-        <div className="text-right hidden md:block" style={{ fontFamily: "var(--font-space-mono)" }}>
-          <div className="mono-label text-[var(--text-muted)] mb-1">IMPLEMENTATION DEPTH</div>
-          <div className="text-xs text-[var(--text-heading)]">6 CONSTRAINTS / POSTGRESQL 17</div>
+        <div className="text-right">
+          <div className="text-xs font-bold font-hash text-[var(--text-muted)] uppercase tracking-wider mb-1">Depth of Assurance</div>
+          <div className="text-sm font-extrabold text-[var(--text-heading)] font-hash">6 Inviolable DB Constraints</div>
         </div>
       </div>
 
-      <div className="max-w-[1400px] mx-auto px-8 relative z-10">
+      <div className="max-w-[1400px] mx-auto px-6 lg:px-8 relative z-10 space-y-6">
 
-        {/* ── DB Guarantee List ── */}
-        <div className="divide-y divide-[#253745] border-b border-[var(--border-subtle)] mb-0">
+        {/* Guarantees List */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
           {DB_GUARANTEES.map((g, i) => (
             <div
               key={g.code}
-              className="guarantee-row opacity-0 grid grid-cols-1 lg:grid-cols-12 py-8 gap-6 lg:gap-0 group"
+              className="guarantee-row fintech-card p-6 flex flex-col justify-between"
             >
-              {/* Code + Index */}
-              <div className="lg:col-span-2 flex items-start gap-4 lg:gap-0 lg:flex-col justify-between lg:justify-start lg:pr-6">
-                <span
-                  className="text-xs font-bold text-[var(--border-strong)] tabular-nums"
-                  style={{ fontFamily: "var(--font-space-mono)" }}
-                >
-                  {String(i + 1).padStart(2, "0")} / {DB_GUARANTEES.length}
-                </span>
-                <span
-                  className="text-[10px] font-bold tracking-[0.15em] text-[var(--text-muted)] border border-[var(--border-subtle)] px-2 py-0.5 lg:mt-2"
-                  style={{ fontFamily: "var(--font-space-mono)" }}
-                >
-                  {g.code}
-                </span>
-              </div>
-
-              {/* Title + body */}
-              <div className="lg:col-span-4 lg:border-l lg:border-[var(--border-subtle)] lg:pl-6 pr-0 lg:pr-6">
-                <div
-                  className="text-sm font-bold tracking-[0.08em] text-[var(--text-heading)] mb-1"
-                  style={{ fontFamily: "var(--font-space-grotesk)" }}
-                >
-                  {g.title}
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <span className="text-xs font-bold font-hash text-[var(--text-muted)]">
+                    {String(i + 1).padStart(2, "0")} / {DB_GUARANTEES.length}
+                  </span>
+                  <span className="text-[10px] font-bold tracking-wider rounded-md border border-[var(--border-subtle)] bg-[var(--bg-elevated)] text-[#7C3AED] dark:text-[#C4B5FD] px-2 py-0.5 font-hash">
+                    {g.code}
+                  </span>
                 </div>
-                <div
-                  className="mono-label text-[var(--border-strong)] mb-3"
-                  style={{ fontFamily: "var(--font-space-mono)" }}
-                >
+
+                <h3 className="text-sm font-extrabold uppercase tracking-wide text-[var(--text-heading)] mb-1">
+                  {g.title}
+                </h3>
+                <div className="text-[11px] font-hash font-bold text-[var(--text-secondary)] mb-3">
                   {g.constraint}
                 </div>
-                <p
-                  className="text-[var(--text-secondary)] text-xs leading-relaxed"
-                  style={{ fontFamily: "var(--font-space-grotesk)" }}
-                >
+                <p className="text-xs text-[var(--text-secondary)] font-medium leading-relaxed mb-6">
                   {g.body}
                 </p>
               </div>
 
-              {/* SQL */}
-              <div className="lg:col-span-6 lg:border-l lg:border-[var(--border-subtle)] lg:pl-6">
-                <div
-                  className="mono-label text-[var(--border-strong)] mb-3"
-                  style={{ fontFamily: "var(--font-space-mono)" }}
-                >
-                  SQL / PYTHON REFERENCE
+              <div>
+                <div className="text-[10px] font-bold uppercase tracking-wider text-[var(--text-muted)] mb-2 font-hash">
+                  SQL Mutation Snippet
                 </div>
-                <pre
-                  className="bg-[var(--bg-base)] border border-[var(--border-subtle)] p-4 text-[11px] text-[var(--text-secondary)] overflow-x-auto group-hover:border-[var(--border-strong)] transition-colors duration-300"
-                  style={{ fontFamily: "var(--font-space-mono)" }}
-                >
+                <pre className="rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-subtle)] p-3 text-[11px] font-hash text-[var(--text-primary)] overflow-x-auto whitespace-pre-wrap">
                   {g.sql}
                 </pre>
               </div>
@@ -194,39 +152,39 @@ export function ArchitectureDeepdive() {
           ))}
         </div>
 
-        {/* ── Architecture Layers ── */}
-        <div className="arch-layers-container py-12 border-b border-[var(--border-subtle)]">
-          <div
-            className="mono-label text-[var(--text-muted)] mb-8"
-            style={{ fontFamily: "var(--font-space-mono)" }}
-          >
-            SYSTEM LAYER ARCHITECTURE
+        {/* Architecture Layers */}
+        <div className="fintech-card p-8">
+          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-[var(--text-muted)] mb-6 font-hash">
+            <Layers className="w-4 h-4 text-[#C4B5FD]" />
+            <span>Full System Topology & Execution Stack</span>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 divide-y md:divide-y-0 md:divide-x divide-[#253745] border border-[var(--border-subtle)]">
-            {ARCH_LAYERS.map((l, i) => (
-              <div key={i} className="arch-layer opacity-0 p-6 flex flex-col gap-3">
-                <span
-                  className="mono-label text-[var(--text-muted)]"
-                  style={{ fontFamily: "var(--font-space-mono)" }}
-                >
-                  L{i + 1} — {l.layer}
-                </span>
-                <span
-                  className="text-sm font-bold text-[var(--text-heading)]"
-                  style={{ fontFamily: "var(--font-space-grotesk)" }}
-                >
-                  {l.tech}
-                </span>
-                <p
-                  className="text-[11px] text-[var(--text-muted)] leading-relaxed"
-                  style={{ fontFamily: "var(--font-space-mono)" }}
-                >
-                  {l.detail}
-                </p>
-              </div>
-            ))}
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {ARCH_LAYERS.map((l, i) => {
+              const Icon = l.icon;
+              return (
+                <div key={i} className="p-5 rounded-2xl bg-[var(--bg-elevated)] border border-[var(--border-subtle)] flex flex-col gap-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-bold font-hash text-[var(--text-muted)]">
+                      LAYER 0{i + 1}
+                    </span>
+                    <Icon className="w-4 h-4 text-[#7C3AED] dark:text-[#C4B5FD]" />
+                  </div>
+                  <div className="text-xs font-bold uppercase tracking-wider text-[var(--text-muted)]">
+                    {l.layer}
+                  </div>
+                  <div className="text-sm font-extrabold text-[var(--text-heading)]">
+                    {l.tech}
+                  </div>
+                  <p className="text-xs text-[var(--text-secondary)] font-medium leading-relaxed mt-1">
+                    {l.detail}
+                  </p>
+                </div>
+              );
+            })}
           </div>
         </div>
+
       </div>
     </section>
   );

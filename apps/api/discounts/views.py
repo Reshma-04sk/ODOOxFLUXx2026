@@ -11,16 +11,17 @@ from .serializers import (
     ValidateDiscountSerializer,
     DiscountValidationResponseSerializer,
 )
-from common.permissions import IsStaffOrReadOnly
+from common.permissions import IsStaffOrReadOnly, IsAdminOrStaffReadOnly
 
 
 class DiscountViewSet(viewsets.ModelViewSet):
     """
     Discount codes and promotional coupons management.
+    Admin-only writes; Staff read-only.
     """
     queryset = Discount.objects.all().order_by("-created_at")
     serializer_class = DiscountSerializer
-    permission_classes = [permissions.IsAuthenticated, IsStaffOrReadOnly]
+    permission_classes = [permissions.IsAuthenticated, IsAdminOrStaffReadOnly]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ["discount_type", "is_active"]
     search_fields = ["code", "description"]

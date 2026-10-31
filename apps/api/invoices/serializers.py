@@ -1,12 +1,21 @@
 from rest_framework import serializers
-from .models import Invoice, InvoiceLineItem
+from .models import Invoice, InvoiceLineItem, InvoiceLineTax
+
+
+class InvoiceLineTaxSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = InvoiceLineTax
+        fields = ["id", "name", "rate", "amount"]
 
 
 class InvoiceLineItemSerializer(serializers.ModelSerializer):
+    taxes = InvoiceLineTaxSerializer(many=True, read_only=True)
+
     class Meta:
         model = InvoiceLineItem
-        fields = ["id", "description", "quantity", "unit_price", "total_price"]
-        read_only_fields = ["id", "total_price"]
+        fields = ["id", "product", "variant", "description", "quantity", "unit_price", "tax_amount", "total_price", "taxes"]
+        read_only_fields = ["id", "tax_amount", "total_price", "taxes"]
+
 
 
 class InvoiceSerializer(serializers.ModelSerializer):

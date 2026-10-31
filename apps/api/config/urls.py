@@ -27,6 +27,7 @@ urlpatterns = [
     path("api/v1/accounts/", include("accounts.urls", namespace="accounts")),
     path("api/v1/customers/", include("customers.urls", namespace="customers")),
     path("api/v1/plans/", include("plans.urls", namespace="plans")),
+    path("api/v1/catalog/", include("catalog.urls", namespace="catalog")),
     path("api/v1/subscriptions/", include("subscriptions.urls", namespace="subscriptions")),
     path("api/v1/discounts/", include("discounts.urls", namespace="discounts")),
     path("api/v1/invoices/", include("invoices.urls", namespace="invoices")),

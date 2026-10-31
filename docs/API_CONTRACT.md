@@ -34,10 +34,29 @@
 | Method | Endpoint | Description | Auth Required |
 | :--- | :--- | :--- | :--- |
 | `GET` | `/` | List active plans | None |
-| `GET` | `/{id}/` | Plan details | None |
+| `GET` | `/{id}/` | Plan details (with lifecycle rules & flags) | None |
 | `POST` | `/` | Create new tier | Staff / Admin |
 
 ---
+
+## 4. Catalog & Quotations (`/api/v1/catalog/`)
+*Access Control: Admin writes only; Staff read-only for catalog entities.*
+
+| Method | Endpoint | Description | Auth Required |
+| :--- | :--- | :--- | :--- |
+| `GET` | `/products/` | List products with variant trees & taxes | Staff / Admin |
+| `POST` | `/products/` | Create product (sales_price, cost_price, notes) | Admin |
+| `GET/POST`| `/taxes/` | Manage taxes (percentage GST, fixed cess) | Admin write / Staff read |
+| `GET/POST`| `/payment-terms/` | Manage payment terms (due_days) | Admin write / Staff read |
+| `GET/POST`| `/attributes/` | Variant attributes (Brand, Storage, Seats) | Admin write / Staff read |
+| `GET/POST`| `/attribute-values/`| Attribute values with extra_price surcharges | Admin write / Staff read |
+| `GET/POST`| `/templates/` | Quotation templates with plan & lines | Admin write / Staff read |
+| `GET` | `/quotations/` | List quotations (tenant isolated) | Yes |
+| `POST` | `/quotations/create_from_template/` | Instantiate quotation from template | Yes |
+| `POST` | `/quotations/{id}/confirm_subscription/` | Provision active Subscription from quotation | Yes |
+
+---
+
 
 ## 4. Subscriptions (`/api/v1/subscriptions/`)
 

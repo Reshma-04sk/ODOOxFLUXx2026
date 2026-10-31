@@ -64,12 +64,21 @@ All tables inherit `TimeStampedModel` (`created_at`, `updated_at`). All monetary
 - `features` (JSONB / JSON DEFAULT '[]')
 - `is_active` (BOOLEAN DEFAULT TRUE)
 - `display_order` (INTEGER DEFAULT 0)
+- `interval_count` (INTEGER DEFAULT 1)
+- `min_qty` (INTEGER DEFAULT 1)
+- `start_date` (DATE NULL)
+- `end_date` (DATE NULL)
+- `auto_close` (BOOLEAN DEFAULT FALSE)
+- `closable` (BOOLEAN DEFAULT TRUE)
+- `pausable` (BOOLEAN DEFAULT TRUE)
+- `renewable` (BOOLEAN DEFAULT TRUE)
 - **Indexes**: `[tier, billing_frequency, is_active]`
 
 ### `subscriptions_subscription`
 - `id` (BIGSERIAL PRIMARY KEY)
 - `customer_id` (BIGINT NOT NULL, FK -> `customers_customer.id`)
 - `plan_id` (BIGINT NOT NULL, FK -> `plans_plan.id`)
+- `payment_term_id` (BIGINT NULL, FK -> `catalog_paymentterm.id`)
 - `status` (VARCHAR(20)) — `trialing`, `active`, `past_due`, `canceled`, `paused`
 - `start_date` (DATE NOT NULL)
 - `current_period_start` (DATE NOT NULL)
@@ -79,6 +88,24 @@ All tables inherit `TimeStampedModel` (`created_at`, `updated_at`). All monetary
 - `canceled_at` (TIMESTAMPTZ NULL)
 - `paused_at` (TIMESTAMPTZ NULL)
 - **Indexes**: `[customer_id, status]`, `[status, current_period_end]`, `[current_period_end]`
+
+### `subscriptions_subscriptionline`
+- `id` (BIGSERIAL PRIMARY KEY)
+- `subscription_id` (BIGINT NOT NULL, FK -> `subscriptions_subscription.id`)
+- `product_id` (BIGINT NOT NULL, FK -> `catalog_product.id`)
+- `variant_id` (BIGINT NULL, FK -> `catalog_productvariant.id`)
+- `quantity` (NUMERIC(10,2) DEFAULT 1.00)
+- `unit_price` (NUMERIC(12,2) NOT NULL) — Snapshot price with variant extra_price
+- M2M `taxes` (FK -> `catalog_tax.id`)
+
+### `subscriptions_subscriptionevent`
+- `id` (BIGSERIAL PRIMARY KEY)
+- `subscription_id` (BIGINT NOT NULL, FK -> `subscriptions_subscription.id`)
+- `from_status` (VARCHAR(20))
+- `to_status` (VARCHAR(20))
+- `actor_id` (BIGINT NULL, FK -> `accounts_user.id`)
+- `reason` (VARCHAR(255))
+- `created_at` (TIMESTAMPTZ)
 
 ### `invoices_invoice`
 - `id` (BIGSERIAL PRIMARY KEY)
@@ -92,7 +119,7 @@ All tables inherit `TimeStampedModel` (`created_at`, `updated_at`). All monetary
 - `period_end` (DATE NULL)
 - `subtotal` (NUMERIC(12,2) DEFAULT 0.00)
 - `discount_amount` (NUMERIC(12,2) DEFAULT 0.00)
-- `tax_amount` (NUMERIC(12,2) DEFAULT 0.00) — 18% GST
+- `tax_amount` (NUMERIC(12,2) DEFAULT 0.00) — Sum of line-level taxes
 - `total_amount` (NUMERIC(12,2) DEFAULT 0.00)
 - `amount_paid` (NUMERIC(12,2) DEFAULT 0.00)
 - `balance_due` (NUMERIC(12,2) DEFAULT 0.00)
@@ -100,6 +127,40 @@ All tables inherit `TimeStampedModel` (`created_at`, `updated_at`). All monetary
 - **Billing Idempotency Constraint**:
   `UNIQUE(subscription_id, period_start, period_end) WHERE subscription_id IS NOT NULL`
 - **Indexes**: `[customer_id, status]`, `[status, due_date]`, `[issue_date]`
+
+### `invoices_invoicelineitem`
+- `id` (BIGSERIAL PRIMARY KEY)
+- `invoice_id` (BIGINT NOT NULL, FK -> `invoices_invoice.id`)
+- `product_id` (BIGINT NULL, FK -> `catalog_product.id`)
+- `variant_id` (BIGINT NULL, FK -> `catalog_productvariant.id`)
+- `description` (VARCHAR(255))
+- `quantity` (INTEGER DEFAULT 1)
+- `unit_price` (NUMERIC(12,2))
+- `tax_amount` (NUMERIC(12,2) DEFAULT 0.00)
+- `total_price` (NUMERIC(12,2))
+
+### `invoices_invoicelinetax`
+- `id` (BIGSERIAL PRIMARY KEY)
+- `line_item_id` (BIGINT NOT NULL, FK -> `invoices_invoicelineitem.id`)
+- `tax_id` (BIGINT NULL, FK -> `catalog_tax.id`)
+- `name` (VARCHAR(100)) — Snapshot tax name
+- `rate` (NUMERIC(6,4)) — Snapshot rate
+- `amount` (NUMERIC(12,2)) — Calculated with ROUND_HALF_UP
+
+### `catalog_product`, `catalog_attribute`, `catalog_attributevalue`, `catalog_productvariant`
+- Product: `name`, `type` (`service`, `consu`, `product`), `sales_price`, `cost_price`, `notes`, `is_active`
+- Attribute: `name` (e.g. `Brand`)
+- AttributeValue: `attribute_id`, `name` (e.g. `Odoo`), `extra_price` (e.g. `+560.00`)
+- ProductVariant: `product_id`, `sku`, M2M `attribute_values` (effective_price = sales_price + extra_price)
+
+### `catalog_tax` & `catalog_paymentterm`
+- Tax: `name`, `rate` (e.g. `0.1800`), `kind` (`percent`, `fixed`), `is_active`
+- PaymentTerm: `name` (e.g. `Net 30`), `due_days` (INTEGER)
+
+### `catalog_quotationtemplate` & `catalog_quotation`
+- QuotationTemplate: `name`, `plan_id`, `validity_days`, `payment_term_id`
+- Quotation: `quotation_number` (`QUO-YYYY-XXXXXX`), `customer_id`, `template_id`, `plan_id`, `payment_term_id`, `status`, `validity_date`, `subtotal`, `tax_amount`, `total_amount`, `subscription_id`
+- QuotationLine: `quotation_id`, `product_id`, `variant_id`, `quantity`, `unit_price`, `subtotal`, `tax_amount`, `total_price`
 
 ### `payments_payment`
 - `id` (BIGSERIAL PRIMARY KEY)
@@ -124,3 +185,4 @@ All tables inherit `TimeStampedModel` (`created_at`, `updated_at`). All monetary
 - `valid_from` (TIMESTAMPTZ NOT NULL)
 - `valid_until` (TIMESTAMPTZ NOT NULL)
 - **Constraint on redemption**: `UNIQUE(discount_id, customer_id, invoice_id)`
+

@@ -38,6 +38,42 @@ class Plan(TimeStampedModel):
     is_active = models.BooleanField(default=True, db_index=True)
     display_order = models.PositiveIntegerField(default=0)
 
+    # Advanced subscription lifecycle rules & constraints
+    interval_count = models.PositiveIntegerField(
+        default=1,
+        help_text="Number of billing intervals, e.g. 1 month, 3 months, 1 year.",
+    )
+    min_qty = models.PositiveIntegerField(
+        default=1,
+        help_text="Minimum subscriber seat or item quantity required.",
+    )
+    start_date = models.DateField(
+        null=True,
+        blank=True,
+        help_text="Date from which plan is active.",
+    )
+    end_date = models.DateField(
+        null=True,
+        blank=True,
+        help_text="Date until which plan remains available for new subscribers.",
+    )
+    auto_close = models.BooleanField(
+        default=False,
+        help_text="Automatically close subscription at the end of the billing period without renewal.",
+    )
+    closable = models.BooleanField(
+        default=True,
+        help_text="Allow subscription to be canceled/closed by subscriber or staff.",
+    )
+    pausable = models.BooleanField(
+        default=True,
+        help_text="Allow subscription on this plan to be paused.",
+    )
+    renewable = models.BooleanField(
+        default=True,
+        help_text="Allow subscription on this plan to be renewed.",
+    )
+
     class Meta:
         verbose_name = "Plan"
         verbose_name_plural = "Plans"

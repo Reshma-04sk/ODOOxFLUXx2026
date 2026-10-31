@@ -95,9 +95,24 @@ class InvoiceLineItem(TimeStampedModel):
         on_delete=models.CASCADE,
         related_name="line_items",
     )
+    product = models.ForeignKey(
+        "catalog.Product",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="invoice_line_items",
+    )
+    variant = models.ForeignKey(
+        "catalog.ProductVariant",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="invoice_line_items",
+    )
     description = models.CharField(max_length=255)
     quantity = models.PositiveIntegerField(default=1)
     unit_price = models.DecimalField(max_digits=12, decimal_places=2)
+    tax_amount = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal("0.00"))
     total_price = models.DecimalField(max_digits=12, decimal_places=2)
 
     class Meta:
@@ -107,9 +122,42 @@ class InvoiceLineItem(TimeStampedModel):
     def save(self, *args, **kwargs):
         if self.unit_price is not None:
             self.unit_price = round_money(self.unit_price)
-        if self.quantity and self.unit_price:
+        if self.tax_amount is not None:
+            self.tax_amount = round_money(self.tax_amount)
+        if self.quantity and self.unit_price is not None:
             self.total_price = round_money(Decimal(self.quantity) * self.unit_price)
         super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.description} x {self.quantity} = ₹{self.total_price}"
+
+
+class InvoiceLineTax(TimeStampedModel):
+    line_item = models.ForeignKey(
+        InvoiceLineItem,
+        on_delete=models.CASCADE,
+        related_name="taxes",
+    )
+    tax = models.ForeignKey(
+        "catalog.Tax",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="invoice_line_taxes",
+    )
+    name = models.CharField(max_length=100)
+    rate = models.DecimalField(max_digits=6, decimal_places=4)
+    amount = models.DecimalField(max_digits=12, decimal_places=2)
+
+    class Meta:
+        verbose_name = "Invoice Line Tax Snapshot"
+        verbose_name_plural = "Invoice Line Tax Snapshots"
+
+    def save(self, *args, **kwargs):
+        if self.amount is not None:
+            self.amount = round_money(self.amount)
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.name} on Line #{self.line_item_id}: ₹{self.amount}"
+

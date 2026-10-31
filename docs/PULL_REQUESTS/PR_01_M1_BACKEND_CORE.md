@@ -66,7 +66,7 @@ Key capabilities included in this PR:
 ---
 
 ### Related Issue / Task
-- Task Board: Tasks **B-01** through **B-12** from [docs/TASK_BOARD.md](file:///c:/Projects/ODOOxFLUXx2026/docs/TASK_BOARD.md).
+- Task Board: Tasks **B-01** through **B-14** from [docs/TASK_BOARD.md](file:///c:/Projects/ODOOxFLUXx2026/docs/TASK_BOARD.md).
 
 ---
 

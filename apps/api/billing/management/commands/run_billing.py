@@ -46,7 +46,7 @@ class Command(BaseCommand):
                     f"[PlanLedger Billing] Completed successfully in {record.duration_ms}ms!\n"
                     f" - Subscriptions Evaluated: {record.subscriptions_evaluated}\n"
                     f" - Invoices Generated: {record.invoices_generated}\n"
-                    f" - Total Amount Invoiced: ₹{record.total_amount_invoiced:,.2f}\n"
+                    f" - Total Amount Invoiced: INR {record.total_amount_invoiced:,.2f}\n"
                     f" - Execution Status: {record.status}"
                 )
             )

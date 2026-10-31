@@ -30,6 +30,7 @@ from subscriptions.models import Subscription
 from discounts.models import Discount
 from invoices.models import Invoice, InvoiceLineItem
 from payments.models import Payment
+from catalog.models import Tax, PaymentTerm, Attribute, AttributeValue, Product, ProductVariant, QuotationTemplate, QuotationTemplateLine
 from common.money import round_money
 
 
@@ -176,6 +177,94 @@ def seed_database(subscriptions_count: int = 5000, invoices_count: int = 20000):
         Discount.objects.get_or_create(code=ddata["code"], defaults=ddata)
 
     print("[3/5] Verified standard promotional discount codes.")
+
+    # 3b. Catalog: Taxes, Payment Terms, Products, Variants, Quotation Templates
+    tax_18, _ = Tax.objects.get_or_create(
+        name="GST 18%",
+        defaults={"rate": Decimal("18.0000"), "kind": Tax.Kind.PERCENT, "is_active": True},
+    )
+    tax_5, _ = Tax.objects.get_or_create(
+        name="GST 5%",
+        defaults={"rate": Decimal("5.0000"), "kind": Tax.Kind.PERCENT, "is_active": True},
+    )
+
+    term_imm, _ = PaymentTerm.objects.get_or_create(
+        name="Immediate Due",
+        defaults={"due_days": 0, "notes": "Due upon receipt of invoice"},
+    )
+    term_15, _ = PaymentTerm.objects.get_or_create(
+        name="Net 15 Days",
+        defaults={"due_days": 15, "notes": "Payment due within 15 days"},
+    )
+    term_30, _ = PaymentTerm.objects.get_or_create(
+        name="Net 30 Days",
+        defaults={"due_days": 30, "notes": "Payment due within 30 days"},
+    )
+
+    attr_brand, _ = Attribute.objects.get_or_create(name="Brand")
+    attr_val_odoo, _ = AttributeValue.objects.get_or_create(
+        attribute=attr_brand,
+        name="Odoo",
+        defaults={"extra_price": Decimal("560.00")},
+    )
+    attr_val_std, _ = AttributeValue.objects.get_or_create(
+        attribute=attr_brand,
+        name="Standard",
+        defaults={"extra_price": Decimal("0.00")},
+    )
+
+    prod_saas, _ = Product.objects.get_or_create(
+        name="Brightloop SaaS Platform License",
+        defaults={
+            "type": Product.ProductType.SERVICE,
+            "sales_price": Decimal("1999.00"),
+            "cost_price": Decimal("350.00"),
+            "notes": "Core subscription access license",
+            "is_active": True,
+        },
+    )
+    prod_saas.taxes.set([tax_18])
+
+    prod_odoo, _ = Product.objects.get_or_create(
+        name="Odoo ERP Integration Connector",
+        defaults={
+            "type": Product.ProductType.SERVICE,
+            "sales_price": Decimal("2499.00"),
+            "cost_price": Decimal("450.00"),
+            "notes": "Seamless two-way synchronization bridge for Odoo ERP",
+            "is_active": True,
+        },
+    )
+    prod_odoo.taxes.set([tax_18])
+    prod_odoo.attributes.set([attr_brand])
+
+    variant_odoo, _ = ProductVariant.objects.get_or_create(
+        product=prod_odoo,
+        sku="CONN-ODOO-001",
+    )
+    variant_odoo.attribute_values.set([attr_val_odoo])
+
+    # Quotation Template
+    growth_plan = Plan.objects.filter(tier=Plan.Tier.GROWTH, billing_frequency=Plan.BillingFrequency.MONTHLY).first()
+    q_template, _ = QuotationTemplate.objects.get_or_create(
+        name="Standard Enterprise SaaS & Odoo Onboarding",
+        defaults={
+            "plan": growth_plan,
+            "validity_days": 30,
+            "payment_term": term_30,
+            "notes": "Includes 30-day validity, Growth Plan, and Odoo Connector addon.",
+        },
+    )
+    if not q_template.lines.exists():
+        q_line = QuotationTemplateLine.objects.create(
+            template=q_template,
+            product=prod_odoo,
+            variant=variant_odoo,
+            quantity=Decimal("1.00"),
+            unit_price=None,  # Computes dynamically: 2499 + 560 = 3059
+        )
+
+    print("[3b] Verified Product Catalog, Variants, Taxes, Payment Terms, and Quotation Templates.")
 
     # 4. Generate Customers & Subscriptions
     existing_subs_count = Subscription.objects.count()

@@ -1,205 +1,378 @@
 "use client";
 
-import React, { useState } from "react";
-import Link from "next/link";
+import React, { useEffect, useRef } from "react";
+import { DashboardShell } from "@/components/layout/dashboard-shell";
+import { gsap } from "gsap";
 import {
   TrendingUp,
   CreditCard,
-  FileText,
-  AlertTriangle,
+  Activity,
   ArrowUpRight,
-  Zap,
-  Play,
-  Loader2,
+  ExternalLink,
+  Shield,
+  FileCode2,
 } from "lucide-react";
-import { DashboardShell } from "@/components/layout/dashboard-shell";
-import { formatINR, formatDate } from "@/lib/utils";
-import { MOCK_KPIS, MOCK_SUBSCRIPTIONS } from "@/services/mock-data";
-import { toast } from "sonner";
-import {
-  AreaChart,
-  Area,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-} from "recharts";
+import { formatINR } from "@/lib/utils";
 
-const CHART_DATA = [
-  { month: "May", invoiced: 185000, collected: 178000 },
-  { month: "Jun", invoiced: 210000, collected: 204000 },
-  { month: "Jul", invoiced: 228000, collected: 221000 },
-  { month: "Aug", invoiced: 235000, collected: 230000 },
-  { month: "Sep", invoiced: 242000, collected: 239000 },
-  { month: "Oct", invoiced: 248500, collected: 244000 },
+// Mock Data strictly aligned with PlanLedger's subscription ledger
+const RECENT_SUBSCRIPTIONS = [
+  {
+    id: "SUB-8091",
+    company: "Acme Corp Infrastructure",
+    plan: "Enterprise Dedicated",
+    amount: 142000,
+    status: "ACTIVE",
+    nextBilling: "2026-11-05",
+    hash: "0x9e4a..b12c",
+    autoRenew: true,
+  },
+  {
+    id: "SUB-8092",
+    company: "Helix Data Labs",
+    plan: "Growth Volume Tier",
+    amount: 54000,
+    status: "ACTIVE",
+    nextBilling: "2026-11-08",
+    hash: "0x3f12..a801",
+    autoRenew: true,
+  },
+  {
+    id: "SUB-8093",
+    company: "Vertex Quantum Analytics",
+    plan: "Standard Cloud",
+    amount: 18500,
+    status: "PENDING",
+    nextBilling: "2026-11-10",
+    hash: "0x7b8c..c992",
+    autoRenew: true,
+  },
+  {
+    id: "SUB-8094",
+    company: "QuantPulse HFT Systems",
+    plan: "Institutional Core",
+    amount: 285000,
+    status: "ACTIVE",
+    nextBilling: "2026-11-12",
+    hash: "0x11a0..44f0",
+    autoRenew: true,
+  },
+  {
+    id: "SUB-8095",
+    company: "Horizon Spatial AI",
+    plan: "Scale Platform",
+    amount: 42000,
+    status: "OVERDUE",
+    nextBilling: "2026-10-28",
+    hash: "0x5d90..e21a",
+    autoRenew: false,
+  },
+  {
+    id: "SUB-8096",
+    company: "Zenith FinTech Global",
+    plan: "Enterprise Dedicated",
+    amount: 195000,
+    status: "ACTIVE",
+    nextBilling: "2026-11-15",
+    hash: "0x88cc..d419",
+    autoRenew: true,
+  },
 ];
 
 export default function DashboardOverviewPage() {
-  const [triggeringBilling, setTriggeringBilling] = useState(false);
+  const cardsContainerRef = useRef<HTMLDivElement>(null);
+  const mrrNumberRef = useRef<HTMLSpanElement>(null);
+  const arrNumberRef = useRef<HTMLSpanElement>(null);
+  const subsNumberRef = useRef<HTMLSpanElement>(null);
+  const churnNumberRef = useRef<HTMLSpanElement>(null);
 
-  const handleManualBillingTrigger = async () => {
-    setTriggeringBilling(true);
-    setTimeout(() => {
-      setTriggeringBilling(false);
-      toast.success("Billing Engine Executed! 4 Subscriptions evaluated, 0 duplicates.");
-    }, 1200);
-  };
+  // Requirement: Dashboard Entry GSAP Stagger + Number Tickers on load
+  useEffect(() => {
+    const ctx = gsap.context(() => {
+      // 1. Stagger load of metric cards: slide up from translateY(20px) with snappy spring easing
+      gsap.from(".terminal-metric-card", {
+        y: 20,
+        opacity: 0,
+        duration: 0.6,
+        stagger: 0.08,
+        ease: "power3.out",
+      });
+
+      // 2. Number Tickers animating from 0 to target values on load
+      const mrrObj = { val: 0 };
+      gsap.to(mrrObj, {
+        val: 142850,
+        duration: 1.6,
+        ease: "power2.out",
+        onUpdate: () => {
+          if (mrrNumberRef.current) {
+            mrrNumberRef.current.textContent = "$" + Math.round(mrrObj.val).toLocaleString();
+          }
+        },
+      });
+
+      const arrObj = { val: 0 };
+      gsap.to(arrObj, {
+        val: 1714200,
+        duration: 1.8,
+        ease: "power2.out",
+        onUpdate: () => {
+          if (arrNumberRef.current) {
+            arrNumberRef.current.textContent = "$" + Math.round(arrObj.val).toLocaleString();
+          }
+        },
+      });
+
+      const subsObj = { val: 0 };
+      gsap.to(subsObj, {
+        val: 1284,
+        duration: 1.4,
+        ease: "power2.out",
+        onUpdate: () => {
+          if (subsNumberRef.current) {
+            subsNumberRef.current.textContent = Math.round(subsObj.val).toLocaleString();
+          }
+        },
+      });
+
+      const churnObj = { val: 0 };
+      gsap.to(churnObj, {
+        val: 0.42,
+        duration: 1.2,
+        ease: "power2.out",
+        onUpdate: () => {
+          if (churnNumberRef.current) {
+            churnNumberRef.current.textContent = churnObj.val.toFixed(2) + "%";
+          }
+        },
+      });
+    }, cardsContainerRef);
+
+    return () => ctx.revert();
+  }, []);
 
   return (
-    <DashboardShell title="Dashboard Overview" subtitle="Real-time Brightloop Subscription & Revenue Pulse">
-      <div className="space-y-8">
-        {/* Top Action Bar */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 rounded-2xl glass-card border border-blue-500/20 bg-gradient-to-r from-blue-950/40 via-slate-900 to-indigo-950/40">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-blue-600/20 border border-blue-500/30 flex items-center justify-center text-blue-400">
-              <Zap className="w-5 h-5" />
+    <DashboardShell
+      title="OPERATIONS TERMINAL"
+      subtitle="REAL-TIME FINANCIAL LEDGER & SUBSCRIPTION STATE MACHINE"
+    >
+      <div className="space-y-8" ref={cardsContainerRef}>
+
+        {/* Telemetry Header Strip */}
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 p-4 border border-[var(--border-subtle)] bg-[var(--bg-surface)]">
+          <div className="flex items-center gap-4">
+            <div className="w-10 h-10 border border-[var(--border-strong)] bg-[var(--bg-elevated)] flex items-center justify-center font-mono font-bold text-[var(--accent)]">
+              SYS
             </div>
             <div>
-              <h2 className="text-sm font-bold text-white">Idempotent Billing Engine</h2>
-              <p className="text-xs text-slate-400">Automated daily billing active • Scheduled via GitHub Actions & Render</p>
-            </div>
-          </div>
-          <button
-            onClick={handleManualBillingTrigger}
-            disabled={triggeringBilling}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold text-white bg-blue-600 hover:bg-blue-500 disabled:opacity-50 transition-all shadow-md shadow-blue-500/25 active:scale-95"
-          >
-            {triggeringBilling ? (
-              <>
-                <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                <span>Running Billing...</span>
-              </>
-            ) : (
-              <>
-                <Play className="w-3.5 h-3.5 fill-current" />
-                <span>Trigger Manual Billing Run</span>
-              </>
-            )}
-          </button>
-        </div>
-
-        {/* 4 Primary KPI Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-          <div className="glass-card p-6 rounded-2xl border border-slate-800 space-y-2">
-            <div className="flex items-center justify-between text-slate-400 text-xs font-medium">
-              <span>Monthly Recurring Revenue</span>
-              <TrendingUp className="w-4 h-4 text-emerald-400" />
-            </div>
-            <div className="text-2xl font-black text-white">{formatINR(MOCK_KPIS.mrr)}</div>
-            <div className="text-[11px] text-emerald-400 flex items-center gap-1 font-semibold">
-              <span>+14.2%</span>
-              <span className="text-slate-400 font-normal">vs last month</span>
+              <div className="flex items-center gap-2">
+                <span className="font-mono text-xs uppercase tracking-widest font-bold text-[var(--text-heading)]">
+                  POSTGRESQL 17 DETERMINISTIC ENGINE ACTIVE
+                </span>
+                <span className="px-2 py-0.5 border border-emerald-500/40 bg-emerald-500/10 font-mono text-[9px] text-emerald-400 font-bold uppercase tracking-widest">
+                  ATOMIC
+                </span>
+              </div>
+              <p className="font-mono text-[11px] text-[var(--text-secondary)] mt-0.5">
+                ISOLATION LEVEL: SERIALIZABLE · IDEMPOTENCY WINDOW: 24H · RECONCILIATION: 0 ERRORS
+              </p>
             </div>
           </div>
 
-          <div className="glass-card p-6 rounded-2xl border border-slate-800 space-y-2">
-            <div className="flex items-center justify-between text-slate-400 text-xs font-medium">
-              <span>Active Subscriptions</span>
-              <CreditCard className="w-4 h-4 text-blue-400" />
-            </div>
-            <div className="text-2xl font-black text-white">{MOCK_KPIS.active_subscriptions}</div>
-            <div className="text-[11px] text-blue-400 flex items-center gap-1 font-semibold">
-              <span>{MOCK_KPIS.trialing_subscriptions} in trial</span>
-              <span className="text-slate-400 font-normal">• 94.2% retention</span>
-            </div>
-          </div>
-
-          <div className="glass-card p-6 rounded-2xl border border-slate-800 space-y-2">
-            <div className="flex items-center justify-between text-slate-400 text-xs font-medium">
-              <span>Annualized Run Rate (ARR)</span>
-              <FileText className="w-4 h-4 text-indigo-400" />
-            </div>
-            <div className="text-2xl font-black text-white">{formatINR(MOCK_KPIS.arr)}</div>
-            <div className="text-[11px] text-indigo-400 flex items-center gap-1 font-semibold">
-              <span>ARPU: {formatINR(MOCK_KPIS.arpu)}</span>
-            </div>
-          </div>
-
-          <div className="glass-card p-6 rounded-2xl border border-slate-800 space-y-2">
-            <div className="flex items-center justify-between text-slate-400 text-xs font-medium">
-              <span>Churn Rate</span>
-              <AlertTriangle className="w-4 h-4 text-amber-400" />
-            </div>
-            <div className="text-2xl font-black text-white">{MOCK_KPIS.churn_rate}%</div>
-            <div className="text-[11px] text-amber-400 flex items-center gap-1 font-semibold">
-              <span>Low risk threshold</span>
-            </div>
+          <div className="flex items-center gap-3 font-mono text-xs text-[var(--text-muted)]">
+            <span>LAST SYNC: 2026-10-31 15:45:00 UTC</span>
+            <span className="text-[var(--border-strong)]">|</span>
+            <span className="text-emerald-500 flex items-center gap-1 font-semibold">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping inline-block" />
+              CONNECTED
+            </span>
           </div>
         </div>
 
-        {/* Revenue Trend Chart & Recent Invoices */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 glass-card p-6 rounded-2xl border border-slate-800 space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-base font-bold text-white">Revenue Performance (INR)</h3>
-                <p className="text-xs text-slate-400">Monthly invoiced vs collected totals</p>
-              </div>
-              <div className="flex items-center gap-3 text-xs">
-                <span className="flex items-center gap-1.5 text-blue-400 font-medium">
-                  <span className="w-2.5 h-2.5 rounded-full bg-blue-500" /> Invoiced
-                </span>
-                <span className="flex items-center gap-1.5 text-emerald-400 font-medium">
-                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" /> Collected
-                </span>
-              </div>
+        {/* Metric Cards Grid - Requirement: MRR, Active Subscriptions, ARR, Churn */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          
+          {/* Card 1: MRR */}
+          <div className="terminal-metric-card border border-[var(--border-subtle)] bg-[var(--bg-surface)] p-6 relative">
+            <div className="absolute top-2 right-2 font-mono text-[9px] text-[var(--text-muted)]">
+              LOC-01 // MRR
             </div>
-
-            <div className="h-64 w-full pt-4">
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={CHART_DATA}>
-                  <defs>
-                    <linearGradient id="colorInvoiced" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.4} />
-                      <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
-                    </linearGradient>
-                    <linearGradient id="colorCollected" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#10b981" stopOpacity={0.4} />
-                      <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
-                  <XAxis dataKey="month" stroke="#64748b" fontSize={11} />
-                  <YAxis stroke="#64748b" fontSize={11} tickFormatter={(val) => `₹${val / 1000}k`} />
-                  <Tooltip
-                    contentStyle={{ backgroundColor: "#0f172a", borderColor: "#334155", borderRadius: "0.5rem" }}
-                  />
-                  <Area type="monotone" dataKey="invoiced" stroke="#3b82f6" fillOpacity={1} fill="url(#colorInvoiced)" strokeWidth={2} />
-                  <Area type="monotone" dataKey="collected" stroke="#10b981" fillOpacity={1} fill="url(#colorCollected)" strokeWidth={2} />
-                </AreaChart>
-              </ResponsiveContainer>
+            <div className="font-mono text-xs uppercase tracking-widest text-[var(--text-muted)] mb-3 flex items-center gap-2">
+              <Activity className="w-3.5 h-3.5 text-[var(--accent)]" />
+              MONTHLY RECURRING (MRR)
             </div>
-          </div>
-
-          {/* Quick Subscriptions Summary */}
-          <div className="glass-card p-6 rounded-2xl border border-slate-800 space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="text-base font-bold text-white">Active Subscriptions</h3>
-              <Link href="/dashboard/subscriptions" className="text-xs text-blue-400 hover:underline flex items-center gap-1">
-                <span>View all</span>
+            <div className="display-text text-3xl sm:text-4xl font-bold tracking-tight mb-2">
+              <span ref={mrrNumberRef}>$0</span>
+            </div>
+            <div className="flex items-center justify-between font-mono text-[11px] text-[var(--text-secondary)] border-t border-[var(--border-subtle)] pt-3">
+              <span className="text-emerald-500 flex items-center gap-0.5 font-bold">
                 <ArrowUpRight className="w-3 h-3" />
-              </Link>
-            </div>
-
-            <div className="space-y-3">
-              {MOCK_SUBSCRIPTIONS.map((sub) => (
-                <div key={sub.id} className="p-3 rounded-xl bg-slate-900/60 border border-slate-800/80 space-y-1">
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="font-semibold text-white">{sub.customer_company}</span>
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                      {sub.status.toUpperCase()}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between text-[11px] text-slate-400">
-                    <span>{sub.plan.name}</span>
-                    <span>Renews {formatDate(sub.current_period_end)}</span>
-                  </div>
-                </div>
-              ))}
+                +12.4% MoM
+              </span>
+              <span>RUN RATE: $142.8K</span>
             </div>
           </div>
+
+          {/* Card 2: Active Subscriptions */}
+          <div className="terminal-metric-card border border-[var(--border-subtle)] bg-[var(--bg-surface)] p-6 relative">
+            <div className="absolute top-2 right-2 font-mono text-[9px] text-[var(--text-muted)]">
+              LOC-02 // SUBS
+            </div>
+            <div className="font-mono text-xs uppercase tracking-widest text-[var(--text-muted)] mb-3 flex items-center gap-2">
+              <CreditCard className="w-3.5 h-3.5 text-[var(--accent)]" />
+              ACTIVE SUBSCRIPTIONS
+            </div>
+            <div className="display-text text-3xl sm:text-4xl font-bold tracking-tight mb-2">
+              <span ref={subsNumberRef}>0</span>
+            </div>
+            <div className="flex items-center justify-between font-mono text-[11px] text-[var(--text-secondary)] border-t border-[var(--border-subtle)] pt-3">
+              <span className="text-emerald-500 flex items-center gap-0.5 font-bold">
+                <ArrowUpRight className="w-3 h-3" />
+                +48 Net Additions
+              </span>
+              <span>100% IDEMPOTENT</span>
+            </div>
+          </div>
+
+          {/* Card 3: ARR */}
+          <div className="terminal-metric-card border border-[var(--border-subtle)] bg-[var(--bg-surface)] p-6 relative">
+            <div className="absolute top-2 right-2 font-mono text-[9px] text-[var(--text-muted)]">
+              LOC-03 // ARR
+            </div>
+            <div className="font-mono text-xs uppercase tracking-widest text-[var(--text-muted)] mb-3 flex items-center gap-2">
+              <TrendingUp className="w-3.5 h-3.5 text-[var(--accent)]" />
+              ANNUAL RUN RATE (ARR)
+            </div>
+            <div className="display-text text-3xl sm:text-4xl font-bold tracking-tight mb-2">
+              <span ref={arrNumberRef}>$0</span>
+            </div>
+            <div className="flex items-center justify-between font-mono text-[11px] text-[var(--text-secondary)] border-t border-[var(--border-subtle)] pt-3">
+              <span className="text-emerald-500 flex items-center gap-0.5 font-bold">
+                <ArrowUpRight className="w-3 h-3" />
+                +14.1% Annualized
+              </span>
+              <span>TARGET: $2.0M</span>
+            </div>
+          </div>
+
+          {/* Card 4: Net Churn */}
+          <div className="terminal-metric-card border border-[var(--border-subtle)] bg-[var(--bg-surface)] p-6 relative">
+            <div className="absolute top-2 right-2 font-mono text-[9px] text-[var(--text-muted)]">
+              LOC-04 // CHURN
+            </div>
+            <div className="font-mono text-xs uppercase tracking-widest text-[var(--text-muted)] mb-3 flex items-center gap-2">
+              <Shield className="w-3.5 h-3.5 text-[var(--accent)]" />
+              NET REVENUE CHURN
+            </div>
+            <div className="display-text text-3xl sm:text-4xl font-bold tracking-tight mb-2">
+              <span ref={churnNumberRef}>0.00%</span>
+            </div>
+            <div className="flex items-center justify-between font-mono text-[11px] text-[var(--text-secondary)] border-t border-[var(--border-subtle)] pt-3">
+              <span className="text-emerald-500 font-bold">
+                BENCHMARK: 2.10%
+              </span>
+              <span>LEAKAGE: 0.00%</span>
+            </div>
+          </div>
+
         </div>
+
+        {/* Data Table Section - Requirement: Clean border-separated Recent Subscriptions with instant hover inversion */}
+        <div className="border border-[var(--border-subtle)] bg-[var(--bg-surface)]">
+          
+          {/* Table Header Controls */}
+          <div className="p-4 border-b border-[var(--border-subtle)] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="w-2.5 h-2.5 bg-[var(--accent)]" />
+              <h2 className="font-mono text-sm uppercase tracking-widest font-bold text-[var(--text-heading)]">
+                RECENT SUBSCRIPTIONS // AUDIT LEDGER
+              </h2>
+            </div>
+            
+            <div className="flex items-center gap-3 font-mono text-xs">
+              <span className="text-[var(--text-muted)] uppercase tracking-wider">
+                SCHEMA: PUBLIC.SUBSCRIPTIONS_V2
+              </span>
+              <span className="px-2 py-1 border border-[var(--border-subtle)] bg-[var(--bg-elevated)] text-[var(--text-secondary)]">
+                SHOWING 6 OF 1,284
+              </span>
+            </div>
+          </div>
+
+          {/* Table Container */}
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="border-b border-[var(--border-subtle)] bg-[var(--bg-elevated)] font-mono text-xs uppercase tracking-widest text-[var(--text-muted)]">
+                  <th className="py-3 px-4 border-r border-[var(--border-subtle)]">SUB ID</th>
+                  <th className="py-3 px-4 border-r border-[var(--border-subtle)]">SUBSCRIBER ORGANIZATION</th>
+                  <th className="py-3 px-4 border-r border-[var(--border-subtle)]">PLAN TIER</th>
+                  <th className="py-3 px-4 border-r border-[var(--border-subtle)]">STATUS</th>
+                  <th className="py-3 px-4 border-r border-[var(--border-subtle)] text-right">MRR VALUE</th>
+                  <th className="py-3 px-4 border-r border-[var(--border-subtle)]">NEXT BILLING</th>
+                  <th className="py-3 px-4">TRANSACTION HASH</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[var(--border-subtle)] font-mono text-xs">
+                {RECENT_SUBSCRIPTIONS.map((sub) => {
+                  const isOverdue = sub.status === "OVERDUE";
+                  const isPending = sub.status === "PENDING";
+                  return (
+                    <tr
+                      key={sub.id}
+                      className="terminal-row-hover cursor-pointer"
+                    >
+                      <td className="py-3.5 px-4 border-r border-[var(--border-subtle)] text-[var(--text-muted)] font-semibold">
+                        {sub.id}
+                      </td>
+                      <td className="py-3.5 px-4 border-r border-[var(--border-subtle)] font-bold text-[var(--text-primary)]">
+                        {sub.company}
+                      </td>
+                      <td className="py-3.5 px-4 border-r border-[var(--border-subtle)] text-[var(--text-secondary)]">
+                        {sub.plan}
+                      </td>
+                      <td className="py-3.5 px-4 border-r border-[var(--border-subtle)]">
+                        <span
+                          className={`inline-block px-2 py-0.5 border text-[10px] tracking-widest uppercase font-bold ${
+                            isOverdue
+                              ? "border-rose-500/50 bg-rose-500/10 text-rose-400"
+                              : isPending
+                              ? "border-amber-500/50 bg-amber-500/10 text-amber-400"
+                              : "border-emerald-500/50 bg-emerald-500/10 text-emerald-400"
+                          }`}
+                        >
+                          {sub.status}
+                        </span>
+                      </td>
+                      <td className="py-3.5 px-4 border-r border-[var(--border-subtle)] text-right font-bold text-[var(--text-primary)]">
+                        {formatINR(sub.amount)}
+                      </td>
+                      <td className="py-3.5 px-4 border-r border-[var(--border-subtle)] text-[var(--text-secondary)]">
+                        {sub.nextBilling}
+                      </td>
+                      <td className="py-3.5 px-4 text-[var(--text-muted)] flex items-center justify-between">
+                        <span>{sub.hash}</span>
+                        <ExternalLink className="w-3 h-3 opacity-60 ml-2" />
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Table Footer */}
+          <div className="p-3 border-t border-[var(--border-subtle)] bg-[var(--bg-elevated)] flex items-center justify-between font-mono text-[11px] text-[var(--text-muted)]">
+            <span className="flex items-center gap-2">
+              <FileCode2 className="w-3.5 h-3.5 text-[var(--accent)]" />
+              TABLE ENGINE: ACID PROTECTED WITH POSTGRESQL SERIALIZABLE LOCKING
+            </span>
+            <span className="uppercase tracking-widest">
+              INSTANT HOVER INVERSION ACTIVE
+            </span>
+          </div>
+
+        </div>
+
       </div>
     </DashboardShell>
   );

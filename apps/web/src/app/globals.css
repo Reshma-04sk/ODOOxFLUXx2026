@@ -4,31 +4,61 @@
 @source ".";
 
 /* ============================================================
-   PLANLEDGER DESIGN SYSTEM — Architectural Steel Blue Palette
+   PLANLEDGER GLOBAL THEME SYSTEM
+   Strict architectural design tokens for Dark (Starry Night) & Light
    ============================================================ */
-@layer base {
-  :root {
-    /* Core Palette */
-    --bg-base:        #06141B;
-    --bg-surface:     #0B1826;
-    --bg-elevated:    #11212D;
-    --border-subtle:  #253745;
-    --border-strong:  #3A5468;
+:root, .light {
+  /* Crisp Architectural Light Mode */
+  --bg-base:        #F8FAFC;
+  --bg-surface:     #FFFFFF;
+  --bg-elevated:    #F1F5F9;
+  --border-subtle:  #E2E8F0;
+  --border-strong:  #CBD5E1;
 
-    /* Typography */
-    --text-primary:   #CCD0CF;
-    --text-heading:   #ADC2D5;
-    --text-secondary: #88A7C1;
-    --text-muted:     #5A7896;
+  /* Typography */
+  --text-primary:   #020617;
+  --text-heading:   #020617;
+  --text-secondary: #475569;
+  --text-muted:     #64748B;
 
-    /* Accent — Powder Blue */
-    --accent:         #ADC2D5;
-    --accent-dim:     #5A7896;
-  }
+  /* Accent & Grids */
+  --accent:         #2563EB;
+  --accent-dim:     #94A3B8;
+  --grid-line:      #E2E8F0;
+  --grid-dot:       #CBD5E1;
+
+  /* Instant Inversion for Trading Terminal Aesthetic */
+  --invert-bg:      #020617;
+  --invert-text:    #F8FAFC;
+}
+
+.dark {
+  /* Starry Night Dark Mode */
+  --bg-base:        #030712;
+  --bg-surface:     #0B132B;
+  --bg-elevated:    #0F172A;
+  --border-subtle:  #1E293B;
+  --border-strong:  #334155;
+
+  /* Typography */
+  --text-primary:   #F8FAFC;
+  --text-heading:   #F8FAFC;
+  --text-secondary: #94A3B8;
+  --text-muted:     #64748B;
+
+  /* Accent & Grids */
+  --accent:         #ADC2D5;
+  --accent-dim:     #5A7896;
+  --grid-line:      #1E293B;
+  --grid-dot:       #1E293B;
+
+  /* Instant Inversion for Trading Terminal Aesthetic */
+  --invert-bg:      #F8FAFC;
+  --invert-text:    #030712;
 }
 
 /* ============================================================
-   LENIS — must be set globally
+   LENIS SMOOTH SCROLL
    ============================================================ */
 html {
   scroll-behavior: initial;
@@ -51,31 +81,31 @@ html.lenis body {
    BASE BODY
    ============================================================ */
 body {
-  background-color: #06141B;
-  color: #CCD0CF;
+  background-color: var(--bg-base);
+  color: var(--text-primary);
   overflow-x: hidden;
   font-feature-settings: "ss01", "ss02", "cv01";
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 /* ============================================================
    ARCHITECTURAL GRID BACKGROUND
-   Single-pixel structural lines with crosshair markers
+   Single-pixel structural lines with crosshair coordinate dots
    ============================================================ */
 .arch-grid-bg {
-  background-color: #06141B;
+  background-color: var(--bg-base);
   background-image:
-    linear-gradient(to right,  #253745 1px, transparent 1px),
-    linear-gradient(to bottom, #253745 1px, transparent 1px);
+    linear-gradient(to right,  var(--grid-line) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
   background-size: 80px 80px;
   position: relative;
 }
 
-/* CSS crosshairs via pseudo-element dots at intersections */
 .arch-grid-bg::before {
   content: "";
   position: absolute;
   inset: 0;
-  background-image: radial-gradient(circle, #253745 1px, transparent 1px);
+  background-image: radial-gradient(circle, var(--grid-dot) 1px, transparent 1px);
   background-size: 80px 80px;
   background-position: -1px -1px;
   pointer-events: none;
@@ -83,36 +113,61 @@ body {
   opacity: 0.6;
 }
 
-/* Fine micro-grid overlay (tighter, even subtler) */
 .arch-grid-fine {
   background-image:
-    linear-gradient(to right,  rgba(37,55,69,0.25) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(37,55,69,0.25) 1px, transparent 1px);
+    linear-gradient(to right,  var(--grid-line) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
   background-size: 20px 20px;
 }
 
 /* ============================================================
-   STRUCTURAL PANELS
+   STRUCTURAL PANELS (0px Border Radius)
    ============================================================ */
 .panel {
-  background-color: #0B1826;
-  border: 1px solid #253745;
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: 0px !important;
 }
 
 .panel-elevated {
-  background-color: #11212D;
-  border: 1px solid #253745;
+  background-color: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: 0px !important;
 }
 
 .panel-highlight {
-  background-color: #11212D;
-  border: 1px solid #3A5468;
+  background-color: var(--bg-elevated);
+  border: 1px solid var(--border-strong);
+  border-radius: 0px !important;
 }
 
-/* Active / selected state */
 .panel-active {
-  background-color: rgba(173, 194, 213, 0.06);
-  border: 1px solid #ADC2D5;
+  background-color: var(--bg-surface);
+  border: 1px solid var(--accent);
+  border-radius: 0px !important;
+}
+
+/* ============================================================
+   TRADING TERMINAL INSTANT HOVER INVERSION
+   ============================================================ */
+.terminal-row-hover {
+  transition: none !important;
+}
+.terminal-row-hover:hover {
+  background-color: var(--invert-bg) !important;
+  color: var(--invert-text) !important;
+}
+.terminal-row-hover:hover * {
+  color: var(--invert-text) !important;
+  border-color: var(--invert-text) !important;
+}
+
+.terminal-link-hover {
+  transition: none !important;
+}
+.terminal-link-hover:hover {
+  background-color: var(--invert-bg) !important;
+  color: var(--invert-text) !important;
 }
 
 /* ============================================================
@@ -122,30 +177,29 @@ body {
   font-family: var(--font-space-grotesk), var(--font-geist-sans), system-ui, sans-serif;
   font-weight: 700;
   letter-spacing: -0.03em;
-  line-height: 1;
-  color: #ADC2D5;
+  color: var(--text-heading);
 }
 
 .mono-label {
-  font-family: var(--font-space-mono), var(--font-geist-mono), "Courier New", monospace;
-  font-size: 0.65rem;
-  letter-spacing: 0.15em;
+  font-family: var(--font-space-mono), var(--font-geist-mono), monospace;
+  font-size: 0.875rem; /* text-sm */
+  letter-spacing: 0.1em; /* tracking-widest */
   text-transform: uppercase;
-  color: #5A7896;
+  color: var(--text-secondary);
 }
 
 .mono-data {
-  font-family: var(--font-space-mono), var(--font-geist-mono), "Courier New", monospace;
+  font-family: var(--font-space-mono), var(--font-geist-mono), monospace;
   font-variant-numeric: tabular-nums;
 }
 
 /* ============================================================
-   GSAP MASK REVEAL — words start clipped below a bounding box
+   GSAP MASK REVEAL
    ============================================================ */
 .word-mask {
   overflow: hidden;
   display: inline-block;
-  line-height: 1.05;
+  line-height: 1.1;
 }
 
 .word-inner {
@@ -155,7 +209,7 @@ body {
 }
 
 /* ============================================================
-   CLIP-PATH TRANSITIONS (cinematic section transitions)
+   CLIP-PATH TRANSITIONS
    ============================================================ */
 .clip-section {
   clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
@@ -163,23 +217,23 @@ body {
 }
 
 /* ============================================================
-   SCROLLBAR — architectural minimal
+   SCROLLBAR
    ============================================================ */
-::-webkit-scrollbar { width: 4px; }
-::-webkit-scrollbar-track { background: #06141B; }
-::-webkit-scrollbar-thumb { background: #253745; }
-::-webkit-scrollbar-thumb:hover { background: #5A7896; }
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: var(--bg-base); }
+::-webkit-scrollbar-thumb { background: var(--border-subtle); }
+::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
 
 /* ============================================================
    SELECTION
    ============================================================ */
 ::selection {
-  background: rgba(173, 194, 213, 0.2);
-  color: #ADC2D5;
+  background: var(--accent);
+  color: var(--bg-base);
 }
 
 /* ============================================================
-   SVG TOPOGRAPHIC LINES (animated)
+   SVG TOPOGRAPHIC DRIFT
    ============================================================ */
 @keyframes topo-drift {
   0%   { transform: translateY(0px); }
@@ -191,23 +245,12 @@ body {
 }
 
 /* ============================================================
-   COUNTER ANIMATION UTILITY
-   ============================================================ */
-@keyframes count-up {
-  from { opacity: 0; transform: translateY(8px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-.counter-reveal {
-  animation: count-up 0.5s ease forwards;
-}
-
-/* ============================================================
-   MISC HOVER STATES
+   NAVBAR LINK UNDERLINE
    ============================================================ */
 .nav-link {
   position: relative;
-  color: #5A7896;
-  transition: color 0.2s ease;
+  color: var(--text-secondary);
+  transition: color 0.15s ease;
 }
 .nav-link::after {
   content: "";
@@ -216,22 +259,22 @@ body {
   left: 0;
   width: 0;
   height: 1px;
-  background: #ADC2D5;
-  transition: width 0.25s ease;
+  background: var(--accent);
+  transition: width 0.2s ease;
 }
-.nav-link:hover { color: #ADC2D5; }
+.nav-link:hover { color: var(--text-primary); }
 .nav-link:hover::after { width: 100%; }
 
-/* Step active underline */
+/* Step active tab */
 .step-tab {
   position: relative;
   padding-bottom: 8px;
-  color: #5A7896;
+  color: var(--text-muted);
   transition: color 0.2s;
   cursor: pointer;
 }
 .step-tab.active {
-  color: #ADC2D5;
+  color: var(--accent);
 }
 .step-tab::after {
   content: "";
@@ -240,8 +283,7 @@ body {
   left: 0;
   width: 0;
   height: 1px;
-  background: #ADC2D5;
-  transition: width 0.3s ease;
+  background: var(--accent);
+  transition: width 0.25s ease;
 }
 .step-tab.active::after { width: 100%; }
-

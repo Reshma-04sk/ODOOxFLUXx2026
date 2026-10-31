@@ -61,6 +61,7 @@
 | `POST` | `/` | Generate manual invoice | Yes |
 | `GET` | `/{id}/` | Get invoice detail with line items | Yes |
 | `POST` | `/{id}/void/` | Void an open invoice | Yes |
+| `GET` | `/{id}/receipt/` | Tax Invoice receipt (supports `?export=html`) | Yes |
 
 ---
 
@@ -70,6 +71,7 @@
 | :--- | :--- | :--- | :--- |
 | `GET` | `/` | List payment transactions | Yes |
 | `POST` | `/` | Record payment (`invoice_id`, `amount`, `payment_method`) | Yes |
+| `POST` | `/{id}/refund/` | Process refund (`refund_amount`, `reason`) | Staff / Admin |
 
 ---
 
@@ -98,3 +100,13 @@
 | `GET` | `/overview/` | MRR, ARR, active subscribers, churn rate | Yes |
 | `GET` | `/trends/` | Monthly invoiced vs collected revenue | Yes |
 | `GET` | `/distribution/` | Subscriber distribution by plan tier | Yes |
+
+---
+
+## 10. System & Health Check (`/api/health/`, `/healthz`)
+
+| Method | Endpoint | Description | Auth Required |
+| :--- | :--- | :--- | :--- |
+| `GET` | `/api/health/` | Service health, database connectivity, and latency check | None |
+| `GET` | `/healthz` | Lightweight liveness probe alias | None |
+

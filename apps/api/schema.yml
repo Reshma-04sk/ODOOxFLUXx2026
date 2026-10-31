@@ -4,6 +4,30 @@ info:
   version: 1.0.0
   description: Brightloop Software Subscription Management & Billing Engine API
 paths:
+  /api/health/:
+    get:
+      operationId: api_health_retrieve
+      description: |-
+        Production health check endpoint for monitoring uptime,
+        database connectivity, and service readiness.
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthCheckSuccessResponse'
+          description: ''
+        '503':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthCheckErrorResponse'
+          description: ''
   /api/v1/accounts/csrf/:
     get:
       operationId: accounts_csrf_retrieve
@@ -1803,6 +1827,30 @@ paths:
               schema:
                 $ref: '#/components/schemas/Subscription'
           description: ''
+  /healthz:
+    get:
+      operationId: healthz_retrieve
+      description: |-
+        Production health check endpoint for monitoring uptime,
+        database connectivity, and service readiness.
+      tags:
+      - healthz
+      security:
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthCheckSuccessResponse'
+          description: ''
+        '503':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthCheckErrorResponse'
+          description: ''
 components:
   schemas:
     AnalyticsOverview:
@@ -2227,6 +2275,41 @@ components:
       - discount_type
       - new_subtotal
       - value
+    HealthCheckErrorResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          default: degraded
+        service:
+          type: string
+          default: planledger-api
+        database:
+          type: string
+          default: error
+        error:
+          type: string
+      required:
+      - error
+    HealthCheckSuccessResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          default: ok
+        service:
+          type: string
+          default: planledger-api
+        database:
+          type: string
+          default: connected
+        version:
+          type: string
+          default: 1.0.0
+        latency_ms:
+          type: number
+          format: double
+          default: 1.2
     Invoice:
       type: object
       properties:

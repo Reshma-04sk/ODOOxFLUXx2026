@@ -9,9 +9,14 @@ from drf_spectacular.views import (
     SpectacularRedocView,
     SpectacularSwaggerView,
 )
+from common.views import HealthCheckView
 
 urlpatterns = [
     path("admin/", admin.site.urls),
+
+    # Health Check endpoints (for Render, Docker, monitoring)
+    path("api/health/", HealthCheckView.as_view(), name="health-check"),
+    path("healthz", HealthCheckView.as_view(), name="healthz"),
 
     # OpenAPI Schema & Interactive API Documentation
     path("api/schema/", SpectacularAPIView.as_view(), name="schema"),

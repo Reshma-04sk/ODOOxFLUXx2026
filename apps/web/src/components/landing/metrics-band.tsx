@@ -1,132 +1,192 @@
 ﻿"use client";
 
-import React, { useEffect, useState } from "react";
-import { TrendingUp, ShieldCheck, Zap, Database, CheckCircle2 } from "lucide-react";
+import React, { useEffect, useRef, useState } from "react";
+import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 
-interface MetricItem {
-  id: string;
-  label: string;
-  targetValue: number;
-  prefix?: string;
-  suffix?: string;
-  displayOverride?: string;
-  subtext: string;
-  badge: string;
-  badgeColor: string;
-  icon: any;
+if (typeof window !== "undefined") {
+  gsap.registerPlugin(ScrollTrigger);
 }
 
-const METRICS: MetricItem[] = [
+interface Metric {
+  id: string;
+  label: string;
+  sublabel: string;
+  value: string;
+  numericTarget: number;
+  prefix: string;
+  suffix: string;
+  decimals: number;
+  detail: string;
+  tag: string;
+}
+
+const METRICS: Metric[] = [
   {
     id: "mrr",
-    label: "Tracked MRR & ARR",
-    targetValue: 12.4,
+    label: "TRACKED MRR / ARR",
+    sublabel: "LIVE LEDGER",
+    value: "12.4",
+    numericTarget: 12.4,
     prefix: "$",
     suffix: "M+",
-    subtext: "Normalized: Monthly direct, Annual ÷ 12, Weekly × 52/12",
-    badge: "Live Ledger",
-    badgeColor: "text-emerald-400 bg-emerald-500/10 border-emerald-500/20",
-    icon: TrendingUp,
+    decimals: 1,
+    detail: "Normalized across monthly, annual / 12, and weekly * 52/12 cadences",
+    tag: "FINANCIAL",
   },
   {
     id: "leakage",
-    label: "Revenue Leakage",
-    targetValue: 0,
+    label: "REVENUE LEAKAGE",
+    sublabel: "ZERO DRIFT",
+    value: "0",
+    numericTarget: 0,
     prefix: "",
     suffix: "%",
-    subtext: "Immutable line-item price & tax snapshot preservation",
-    badge: "Zero Drift",
-    badgeColor: "text-cyan-400 bg-cyan-500/10 border-cyan-500/20",
-    icon: ShieldCheck,
+    decimals: 0,
+    detail: "Immutable line-item price & tax snapshot preserved at invoice time",
+    tag: "INTEGRITY",
   },
   {
     id: "idempotency",
-    label: "Idempotent Billing Runs",
-    targetValue: 100,
+    label: "IDEMPOTENT BILLING RUNS",
+    sublabel: "GUARANTEED",
+    value: "100",
+    numericTarget: 100,
     prefix: "",
     suffix: "%",
-    subtext: "uq_invoice_subscription_period partial unique index lock",
-    badge: "Guaranteed",
-    badgeColor: "text-emerald-400 bg-emerald-500/10 border-emerald-500/20",
-    icon: Zap,
+    decimals: 0,
+    detail: "uq_invoice_subscription_period partial unique index prevents duplicate runs",
+    tag: "ATOMICITY",
   },
   {
     id: "benchmark",
-    label: "Seed Query Benchmark",
-    targetValue: 2.0,
-    prefix: "< ",
+    label: "SEED QUERY BENCHMARK",
+    sublabel: "POSTGRES 17",
+    value: "<1.42",
+    numericTarget: 1.42,
+    prefix: "<",
     suffix: "s",
-    displayOverride: "< 1.42s",
-    subtext: "Measured on 5,000 subscriptions & 20,000 invoice lines",
-    badge: "Postgres 17",
-    badgeColor: "text-amber-400 bg-amber-500/10 border-amber-500/20",
-    icon: Database,
+    decimals: 2,
+    detail: "Measured on 5,000 subscriptions & 20,000 invoice lines with indexes",
+    tag: "PERFORMANCE",
   },
 ];
 
-export function MetricsBand() {
-  const [animated, setAnimated] = useState(false);
+function CounterValue({ metric, triggered }: { metric: Metric; triggered: boolean }) {
+  const [display, setDisplay] = useState(metric.decimals === 0 ? "0" : "0.0");
+  const rafRef = useRef<number | null>(null);
 
   useEffect(() => {
-    const timer = setTimeout(() => setAnimated(true), 150);
-    return () => clearTimeout(timer);
+    if (!triggered) return;
+    const start = performance.now();
+    const duration = 1600;
+    const target = metric.numericTarget;
+
+    const tick = (now: number) => {
+      const elapsed = now - start;
+      const progress = Math.min(elapsed / duration, 1);
+      const ease = 1 - Math.pow(1 - progress, 4);
+      const current = target * ease;
+      setDisplay(current.toFixed(metric.decimals));
+      if (progress < 1) rafRef.current = requestAnimationFrame(tick);
+    };
+
+    rafRef.current = requestAnimationFrame(tick);
+    return () => { if (rafRef.current) cancelAnimationFrame(rafRef.current); };
+  }, [triggered, metric]);
+
+  return <>{metric.prefix}{display}{metric.suffix}</>;
+}
+
+export function MetricsBand() {
+  const sectionRef = useRef<HTMLElement>(null);
+  const [triggered, setTriggered] = useState(false);
+
+  useEffect(() => {
+    if (!sectionRef.current) return;
+    const ctx = gsap.context(() => {
+      ScrollTrigger.create({
+        trigger: sectionRef.current,
+        start: "top 80%",
+        onEnter: () => setTriggered(true),
+        once: true,
+      });
+
+      gsap.fromTo(
+        sectionRef.current!.querySelectorAll(".metric-card"),
+        { y: 30, opacity: 0 },
+        {
+          y: 0,
+          opacity: 1,
+          stagger: 0.08,
+          duration: 0.7,
+          ease: "power3.out",
+          scrollTrigger: {
+            trigger: sectionRef.current,
+            start: "top 75%",
+          },
+        }
+      );
+    }, sectionRef);
+    return () => ctx.revert();
   }, []);
 
   return (
-    <section id="metrics" className="relative py-20 border-y border-zinc-800/80 bg-zinc-950/70">
-      <div className="absolute inset-0 bg-grid-pattern opacity-25 pointer-events-none" />
+    <section
+      ref={sectionRef}
+      id="metrics"
+      className="relative bg-[var(--bg-surface)] border-y border-[var(--border-subtle)]"
+    >
+      {/* Fine grid overlay */}
+      <div className="absolute inset-0 arch-grid-fine opacity-20 pointer-events-none" />
 
-      <div className="max-w-7xl mx-auto px-6 relative z-10">
-        <div className="text-center max-w-2xl mx-auto mb-14 space-y-3">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-            <CheckCircle2 className="w-3.5 h-3.5" />
-            <span>Demonstrable Financial Integrity</span>
-          </div>
-          <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-white tracking-tight">
-            Engineered for <span className="font-serif italic font-normal text-emerald-400">Absolute Precision</span> at Scale
-          </h2>
-          <p className="text-xs sm:text-sm text-zinc-400">
-            Every metric below is backed by strict PostgreSQL 17 engine constraints and ACID transaction isolation.
-          </p>
+      {/* Section header */}
+      <div className="max-w-[1400px] mx-auto px-6 lg:px-8 py-8 border-b border-[var(--border-subtle)] flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="w-2.5 h-2.5 rounded-full bg-[#C4B5FD]" />
+          <span className="text-xs font-bold tracking-widest uppercase text-[var(--text-secondary)]">
+            FINANCIAL PERFORMANCE TELEMETRY
+          </span>
         </div>
+        <span className="text-xs font-hash text-[var(--text-muted)] hidden md:block">
+          POSTGRESQL 17 &middot; ACID ASSURANCE
+        </span>
+      </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {METRICS.map((metric) => {
-            const Icon = metric.icon;
-            return (
-              <div
-                key={metric.id}
-                className="glass-card rounded-2xl p-6 relative overflow-hidden group hover:border-emerald-500/40"
-              >
-                {/* Ambient glow on hover */}
-                <div className="absolute -right-8 -top-8 w-28 h-28 bg-emerald-500/5 group-hover:bg-emerald-500/15 rounded-full blur-2xl transition-all pointer-events-none" />
+      {/* Metrics grid */}
+      <div className="max-w-[1400px] mx-auto relative z-10">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+          {METRICS.map((metric, i) => (
+            <div
+              key={metric.id}
+              className={`metric-card p-8 flex flex-col justify-between min-h-[260px] border-b sm:border-b-0 ${
+                i < METRICS.length - 1 ? "lg:border-r border-[var(--border-subtle)]" : ""
+              } ${i % 2 === 0 ? "sm:border-r border-[var(--border-subtle)]" : ""}`}
+            >
+              {/* Tag */}
+              <div className="flex items-center justify-between mb-6">
+                <span className="text-xs font-bold tracking-wider text-[var(--text-muted)] font-hash">{metric.sublabel}</span>
+                <span className="text-[10px] font-bold tracking-wider rounded-md border border-[var(--border-subtle)] bg-[var(--bg-elevated)] text-[var(--text-secondary)] px-2 py-0.5">
+                  {metric.tag}
+                </span>
+              </div>
 
-                <div className="flex items-center justify-between mb-4">
-                  <div className="w-10 h-10 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-300 group-hover:text-emerald-400 group-hover:border-emerald-500/30 transition-all">
-                    <Icon className="w-5 h-5" />
-                  </div>
-                  <span
-                    className={`text-[10px] font-mono font-bold px-2.5 py-0.5 rounded-full border ${metric.badgeColor}`}
-                  >
-                    {metric.badge}
-                  </span>
+              {/* Big number */}
+              <div className="text-4xl sm:text-5xl font-extrabold tracking-tight text-[var(--text-heading)] mb-4 font-hash">
+                <CounterValue metric={metric} triggered={triggered} />
+              </div>
+
+              {/* Label */}
+              <div className="mt-auto">
+                <div className="text-xs font-bold text-[var(--text-secondary)] tracking-wider mb-2 uppercase">
+                  {metric.label}
                 </div>
-
-                <div className="space-y-1.5">
-                  <div className="text-3xl sm:text-4xl font-extrabold tracking-tight text-white font-mono flex items-baseline">
-                    <span className="text-emerald-400">{metric.prefix}</span>
-                    <span>{metric.displayOverride ? metric.displayOverride.replace(metric.prefix || "", "") : metric.targetValue}</span>
-                    <span className="text-zinc-400 text-xl ml-0.5">{metric.displayOverride ? "" : metric.suffix}</span>
-                  </div>
-
-                  <h3 className="text-sm font-semibold text-zinc-200">{metric.label}</h3>
-                  <p className="text-[11px] text-zinc-400 leading-relaxed pt-1 border-t border-zinc-800/80">
-                    {metric.subtext}
-                  </p>
+                <div className="text-xs text-[var(--text-muted)] leading-relaxed border-t border-[var(--border-subtle)] pt-3 font-sans-modern">
+                  {metric.detail}
                 </div>
               </div>
-            );
-          })}
+            </div>
+          ))}
         </div>
       </div>
     </section>

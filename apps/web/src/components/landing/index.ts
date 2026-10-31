@@ -1,7 +1,5 @@
-﻿export * from "./navbar";
+export * from "./navbar";
 export * from "./hero-section";
-export * from "./hero-3d-canvas";
-export * from "./kinetic-text";
 export * from "./metrics-band";
 export * from "./workflow-simulator";
 export * from "./bento-grid";
@@ -10,3 +8,4 @@ export * from "./pricing-section";
 export * from "./team-section";
 export * from "./footer";
 export * from "./lenis-provider";
+

@@ -1,45 +1,46 @@
-﻿import type { Metadata } from "next";
-import { Geist, Geist_Mono, Playfair_Display } from "next/font/google";
+import type { Metadata } from "next";
+import { Plus_Jakarta_Sans, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { AppQueryProvider } from "@/lib/query-client";
 import { Toaster } from "sonner";
 import { LenisScrollProvider } from "@/components/landing/lenis-provider";
+import { ThemeProvider } from "@/components/theme-provider";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const plusJakartaSans = Plus_Jakarta_Sans({
+  variable: "--font-sans",
   subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const jetbrainsMono = JetBrains_Mono({
+  variable: "--font-mono",
   subsets: ["latin"],
-});
-
-const playfairDisplay = Playfair_Display({
-  variable: "--font-serif",
-  subsets: ["latin"],
-  style: ["normal", "italic"],
+  weight: ["400", "500"],
 });
 
 export const metadata: Metadata = {
-  title: "PlanLedger — Subscription Management & Financial Operations Platform",
+  title: "PlanLedger - Subscription Management & Financial Operations Platform",
   description:
-    "Enterprise-grade subscription engine, PostgreSQL 17 transaction guarantees, idempotent recurring billing, and real-time financial ledger built for the Odoo Hackathon 2026.",
+    "Next-generation FinTech subscription and financial operations platform. PostgreSQL 17 transactional guarantees, idempotent recurring billing, real-time ledger pulse.",
+  keywords: ["subscription management", "FinTech", "billing engine", "PostgreSQL 17", "Next.js"],
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} ${playfairDisplay.variable} h-full antialiased dark`}
+      suppressHydrationWarning
+      className={`${plusJakartaSans.variable} ${jetbrainsMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-[#08090a] text-zinc-100 font-sans selection:bg-emerald-500/20 selection:text-emerald-300">
-        <AppQueryProvider>
-          <LenisScrollProvider>
-            {children}
-            <Toaster richColors position="top-right" theme="dark" />
-          </LenisScrollProvider>
-        </AppQueryProvider>
+      <body className="min-h-full flex flex-col bg-[var(--bg-base)] text-[var(--text-primary)] transition-colors duration-200">
+        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
+          <AppQueryProvider>
+            <LenisScrollProvider>
+              {children}
+              <Toaster position="top-right" richColors />
+            </LenisScrollProvider>
+          </AppQueryProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

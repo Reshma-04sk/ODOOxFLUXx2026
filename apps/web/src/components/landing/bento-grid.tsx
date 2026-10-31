@@ -1,305 +1,150 @@
 ﻿"use client";
 
 import React, { useState } from "react";
-import {
-  Database,
-  Layers,
-  ShieldAlert,
-  Clock,
-  Calculator,
-  GitBranch,
-  Terminal,
-  Code2,
-  CheckCircle2,
-  Lock,
-  ExternalLink,
-} from "lucide-react";
+import { Lock, FileCheck, TrendingUp, GitBranch, Zap, Binary, Check } from "lucide-react";
+
+const SQL_TABS = {
+  unique: `CREATE UNIQUE INDEX uq_invoice_subscription_period
+  ON invoices(subscription_id, billing_period_start)
+  WHERE status NOT IN ('cancelled', 'void');
+
+-- Guarantee: Zero duplicate invoices across concurrent runs,
+-- enforced at the PostgreSQL storage engine level.`,
+  due: `SELECT s.id, s.next_invoice_date,
+       p.name as plan, c.email
+FROM subscriptions s
+JOIN plans p ON s.plan_id = p.id
+JOIN customers c ON s.customer_id = c.id
+WHERE s.status = 'active'
+  AND s.next_invoice_date <= NOW()
+  AND s.next_invoice_date > NOW() - INTERVAL '1 day'
+ORDER BY s.next_invoice_date;`,
+  case: `UPDATE subscriptions
+SET mrr_contribution = CASE
+  WHEN billing_cycle = 'monthly'  THEN price
+  WHEN billing_cycle = 'annual'   THEN price / 12
+  WHEN billing_cycle = 'weekly'   THEN price * 52 / 12
+  ELSE 0
+END
+WHERE status = 'active';`,
+};
+
+const FEATURES = [
+  {
+    icon: Lock,
+    title: "PARTIAL UNIQUE INDEX",
+    body: "uq_invoice_subscription_period prevents duplicate billing runs at the PostgreSQL storage layer — application logic can never bypass this.",
+  },
+  {
+    icon: FileCheck,
+    title: "IMMUTABLE PRICE SNAPSHOT",
+    body: "Line-item prices and tax rates are frozen at invoice generation time. Future price tier edits never retroactively alter historical invoices.",
+  },
+  {
+    icon: TrendingUp,
+    title: "MRR / ARR NORMALIZATION",
+    body: "Monthly, annual, and weekly cadences are normalized to a single MRR contribution using SQL CASE logic at the database layer.",
+  },
+  {
+    icon: GitBranch,
+    title: "STATE MACHINE CONSTRAINTS",
+    body: "PostgreSQL CHECK constraints enforce valid status transitions. Invalid state mutations (paid → active) fail at the database level.",
+  },
+  {
+    icon: Zap,
+    title: "ATOMIC BILLING RUNS",
+    body: "The scheduler uses Django transaction.atomic() with idempotency keys. Re-running for the same period safely absorbs conflicts.",
+  },
+  {
+    icon: Binary,
+    title: "DECIMAL QUANTIZATION",
+    body: "Python Decimal with ROUND_HALF_UP quantization. Zero IEEE 754 floating-point drift anywhere in the financial ledger.",
+  },
+];
+
+type TabKey = keyof typeof SQL_TABS;
 
 export function BentoGrid() {
-  const [selectedSqlTab, setSelectedSqlTab] = useState<"unique" | "due" | "case">("unique");
+  const [tab, setTab] = useState<TabKey>("unique");
 
   return (
-    <section id="bento" className="py-24 border-t border-zinc-800/80 bg-[#08090a] relative">
-      <div className="max-w-7xl mx-auto px-6 relative z-10">
-        <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
-            <Database className="w-3.5 h-3.5" />
-            <span>PostgreSQL 17 Core Architecture</span>
+    <section id="bento" className="relative py-24 bg-[var(--bg-surface)] border-t border-[var(--border-subtle)]">
+      <div className="absolute inset-0 arch-grid-fine opacity-15 pointer-events-none" />
+
+      <div className="max-w-[1400px] mx-auto px-6 lg:px-8 relative z-10">
+
+        {/* Header */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-16">
+          <div>
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[var(--border-subtle)] bg-[var(--bg-elevated)] text-xs font-bold text-[#C4B5FD] uppercase tracking-wider mb-4 shadow-sm">
+              <span className="w-2 h-2 rounded-full bg-[#C4B5FD]" />
+              <span>Storage Architecture</span>
+            </div>
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-[var(--text-heading)] max-w-2xl">
+              Built on Database Guarantees, Not Flaky Application Code
+            </h2>
           </div>
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white tracking-tight">
-            Built on <span className="font-serif italic font-normal text-cyan-400">Database Guarantees</span>, Not Flaky Application Logic
-          </h2>
-          <p className="text-zinc-400 text-sm sm:text-base">
-            Why PlanLedger stands out in judging: financial rules are enforced at the database layer with partial unique indexes, foreign key protections, and deterministic state machines.
+          <p className="text-sm text-[var(--text-secondary)] max-w-md font-medium leading-relaxed">
+            Every business invariant is anchored in PostgreSQL 17 ACID properties. Transactions cannot double-invoice, drift, or silently corrupt state.
           </p>
         </div>
 
-        {/* 3x2 Bento Box Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {/* Card 1: PostgreSQL 17 Constraints & Indexes */}
-          <div className="glass-card rounded-2xl p-6 lg:col-span-2 relative overflow-hidden flex flex-col justify-between">
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-10 h-10 rounded-xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400">
-                    <Database className="w-5 h-5" />
+        {/* Feature Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+          {FEATURES.map((f, i) => {
+            const Icon = f.icon;
+            return (
+              <div
+                key={i}
+                className="fintech-card p-6 flex flex-col justify-between hover:-translate-y-1 transition-transform duration-200"
+              >
+                <div>
+                  <div className="w-10 h-10 rounded-2xl bg-[var(--bg-elevated)] border border-[var(--border-subtle)] flex items-center justify-center text-[#7C3AED] dark:text-[#C4B5FD] mb-5 shadow-sm">
+                    <Icon className="w-5 h-5" />
                   </div>
-                  <div>
-                    <h3 className="text-lg font-bold text-white">PostgreSQL 17 Database Guarantees</h3>
-                    <p className="text-xs text-zinc-400">Self-managed local Docker & Neon production DB</p>
-                  </div>
+                  <h3 className="text-sm font-extrabold tracking-wider text-[var(--text-heading)] uppercase mb-2">
+                    {f.title}
+                  </h3>
+                  <p className="text-xs text-[var(--text-secondary)] font-medium leading-relaxed">
+                    {f.body}
+                  </p>
                 </div>
-                <span className="text-[10px] font-mono font-bold text-cyan-400 bg-cyan-500/10 border border-cyan-500/20 px-2.5 py-1 rounded-full">
-                  Centerpiece of Judging
-                </span>
-              </div>
-
-              <p className="text-xs text-zinc-300 leading-relaxed">
-                PlanLedger prevents duplicate billing, overpayment, and invalid states at the Postgres level. Partial unique indexes guarantee exactly one non-cancelled invoice per period.
-              </p>
-
-              {/* Interactive SQL Snippet Selector */}
-              <div className="space-y-2">
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => setSelectedSqlTab("unique")}
-                    className={`px-2.5 py-1 text-[11px] font-mono rounded-md transition-colors cursor-pointer ${
-                      selectedSqlTab === "unique"
-                        ? "bg-cyan-500/20 text-cyan-400 border border-cyan-500/40"
-                        : "text-zinc-400 hover:text-white"
-                    }`}
-                  >
-                    uq_invoice_subscription_period
-                  </button>
-                  <button
-                    onClick={() => setSelectedSqlTab("due")}
-                    className={`px-2.5 py-1 text-[11px] font-mono rounded-md transition-colors cursor-pointer ${
-                      selectedSqlTab === "due"
-                        ? "bg-cyan-500/20 text-cyan-400 border border-cyan-500/40"
-                        : "text-zinc-400 hover:text-white"
-                    }`}
-                  >
-                    ix_subscription_due_active
-                  </button>
-                  <button
-                    onClick={() => setSelectedSqlTab("case")}
-                    className={`px-2.5 py-1 text-[11px] font-mono rounded-md transition-colors cursor-pointer ${
-                      selectedSqlTab === "case"
-                        ? "bg-cyan-500/20 text-cyan-400 border border-cyan-500/40"
-                        : "text-zinc-400 hover:text-white"
-                    }`}
-                  >
-                    uq_user_email_lower
-                  </button>
-                </div>
-
-                <div className="p-3.5 rounded-xl bg-black/80 border border-zinc-800 font-mono text-[11px] text-zinc-300 overflow-x-auto">
-                  {selectedSqlTab === "unique" && (
-                    <div className="space-y-1">
-                      <span className="text-zinc-500">-- Prevents duplicate invoices for the same billing epoch</span>
-                      <div className="text-cyan-400">
-                        CREATE UNIQUE INDEX uq_invoice_subscription_period
-                      </div>
-                      <div className="text-zinc-200">
-                        ON billing_invoice (subscription_id, period_start)
-                      </div>
-                      <div className="text-emerald-400">
-                        WHERE status &lt;&gt; &apos;cancelled&apos;;
-                      </div>
-                    </div>
-                  )}
-                  {selectedSqlTab === "due" && (
-                    <div className="space-y-1">
-                      <span className="text-zinc-500">-- High-speed index for scheduler batch lookups</span>
-                      <div className="text-cyan-400">
-                        CREATE INDEX ix_subscription_due_active
-                      </div>
-                      <div className="text-zinc-200">
-                        ON subscriptions_subscription (next_invoice_date)
-                      </div>
-                      <div className="text-emerald-400">
-                        WHERE status = &apos;active&apos;;
-                      </div>
-                    </div>
-                  )}
-                  {selectedSqlTab === "case" && (
-                    <div className="space-y-1">
-                      <span className="text-zinc-500">-- Case-insensitive uniqueness enforcement</span>
-                      <div className="text-cyan-400">
-                        CREATE UNIQUE INDEX uq_user_email_lower
-                      </div>
-                      <div className="text-emerald-400">
-                        ON accounts_user (LOWER(email));
-                      </div>
-                    </div>
-                  )}
+                <div className="mt-6 pt-4 border-t border-[var(--border-subtle)] flex items-center gap-2 text-[11px] font-hash text-emerald-500">
+                  <Check className="w-3.5 h-3.5" />
+                  <span>Enforced at DB Layer</span>
                 </div>
               </div>
-            </div>
+            );
+          })}
+        </div>
 
-            <div className="pt-4 mt-4 border-t border-zinc-800/80 flex items-center justify-between text-[11px] text-zinc-400">
-              <span className="flex items-center gap-1.5 text-emerald-400 font-semibold">
-                <CheckCircle2 className="w-3.5 h-3.5" />
-                <span>PROTECT foreign keys on all financial rows</span>
-              </span>
-              <span className="font-mono text-zinc-400">ACID Isolation</span>
-            </div>
+        {/* SQL Panel */}
+        <div className="fintech-card overflow-hidden">
+          {/* Tab bar */}
+          <div className="flex border-b border-[var(--border-subtle)] bg-[var(--bg-elevated)]/60 px-4 pt-3 gap-2 overflow-x-auto">
+            {(["unique", "due", "case"] as TabKey[]).map((t) => (
+              <button
+                key={t}
+                onClick={() => setTab(t)}
+                className={`px-5 py-2.5 rounded-t-xl text-xs font-bold tracking-wider font-hash transition-all ${
+                  tab === t
+                    ? "bg-[var(--bg-surface)] text-[var(--text-heading)] border-t-2 border-[#C4B5FD] shadow-sm"
+                    : "text-[var(--text-muted)] hover:text-[var(--text-primary)]"
+                }`}
+              >
+                {t === "unique" && "UQ_INVOICE_INDEX"}
+                {t === "due"    && "DUE_BILLING_SELECT"}
+                {t === "case"   && "MRR_NORMALIZATION"}
+              </button>
+            ))}
           </div>
-
-          {/* Card 2: State Machine Lifecycle */}
-          <div className="glass-card rounded-2xl p-6 flex flex-col justify-between">
-            <div className="space-y-4">
-              <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
-                <Layers className="w-5 h-5" />
-              </div>
-              <div>
-                <h3 className="text-lg font-bold text-white">Subscription State Machine</h3>
-                <p className="text-xs text-zinc-400 mt-1">
-                  Deterministic transitions in <code className="text-emerald-400 font-mono">subscriptions/state.py</code>
-                </p>
-              </div>
-
-              <div className="p-3 rounded-xl bg-black/60 border border-zinc-800 space-y-2 text-xs font-mono">
-                <div className="flex items-center justify-between text-zinc-400">
-                  <span>draft ➔ quotation</span>
-                  <span className="text-emerald-400 font-bold">✓ Confirmed</span>
-                </div>
-                <div className="flex items-center justify-between text-zinc-400">
-                  <span>confirmed ➔ active</span>
-                  <span className="text-emerald-400 font-bold">✓ Bills First Period</span>
-                </div>
-                <div className="flex items-center justify-between text-zinc-400">
-                  <span>active ⇄ paused</span>
-                  <span className="text-cyan-400 font-bold">✓ Plan Pausable Flag</span>
-                </div>
-                <div className="flex items-center justify-between text-zinc-400">
-                  <span>active ➔ closed</span>
-                  <span className="text-amber-400 font-bold">✓ Auto-Close Cap</span>
-                </div>
-              </div>
-
-              <p className="text-xs text-zinc-400 leading-relaxed">
-                Illegal state transitions are rejected with friendly 400 responses. Activation automatically generates the initial period invoice and advances the billing schedule.
-              </p>
-            </div>
-
-            <div className="pt-4 border-t border-zinc-800/80 text-[11px] text-emerald-400 font-mono flex items-center gap-1">
-              <span>● Sequence: SUB/2026/00001</span>
-            </div>
-          </div>
-
-          {/* Card 3: Customer Isolation & BOLA Protection */}
-          <div className="glass-card rounded-2xl p-6 flex flex-col justify-between">
-            <div className="space-y-4">
-              <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400">
-                <ShieldAlert className="w-5 h-5" />
-              </div>
-              <div>
-                <h3 className="text-lg font-bold text-white">BOLA & Tenant Protection</h3>
-                <p className="text-xs text-zinc-400 mt-1">Broken Object Level Authorization Defense</p>
-              </div>
-
-              <p className="text-xs text-zinc-300 leading-relaxed">
-                Customer querysets are strictly scoped on the Django backend to the authenticated user&apos;s linked Customer profile.
-              </p>
-
-              <div className="p-3 rounded-xl bg-zinc-950 border border-zinc-800 space-y-2 text-[11px]">
-                <div className="flex items-center gap-2 text-red-400 font-mono">
-                  <Lock className="w-3.5 h-3.5 shrink-0" />
-                  <span>Customer A requesting Customer B&apos;s invoice receives strict 404 response</span>
-                </div>
-                <p className="text-zinc-400 text-[10px]">
-                  Prevents ID enumeration and hides object existence from unauthorized callers.
-                </p>
-              </div>
-            </div>
-
-            <div className="pt-4 border-t border-zinc-800/80 text-[11px] text-zinc-400 font-mono">
-              Role Scopes: Admin · Staff · Customer
-            </div>
-          </div>
-
-          {/* Card 4: Automated Billing Scheduler */}
-          <div className="glass-card rounded-2xl p-6 flex flex-col justify-between">
-            <div className="space-y-4">
-              <div className="w-10 h-10 rounded-xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400">
-                <Clock className="w-5 h-5" />
-              </div>
-              <div>
-                <h3 className="text-lg font-bold text-white">Automated Billing Scheduler</h3>
-                <p className="text-xs text-zinc-400 mt-1">Multi-tier execution strategy</p>
-              </div>
-
-              <p className="text-xs text-zinc-300 leading-relaxed">
-                Three robust avenues to run recurring billing:
-              </p>
-
-              <ul className="space-y-2 text-xs text-zinc-300">
-                <li className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
-                  <span><strong>GitHub Actions cron:</strong> Calls bearer-protected endpoint</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                  <span><strong>Admin UI:</strong> On-demand &quot;Run Billing Now&quot; button</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
-                  <span><strong>CLI:</strong> <code className="font-mono text-zinc-400 text-[10px]">python manage.py run_billing</code></span>
-                </li>
-              </ul>
-            </div>
-
-            <div className="pt-4 border-t border-zinc-800/80 text-[11px] text-zinc-400 font-mono">
-              Batch query: select_for_update(skip_locked=True)
-            </div>
-          </div>
-
-          {/* Card 5: Financial Decimal Precision */}
-          <div className="glass-card rounded-2xl p-6 lg:col-span-2 flex flex-col justify-between">
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
-                    <Calculator className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-bold text-white">Decimal ROUND_HALF_UP Precision Engine</h3>
-                    <p className="text-xs text-zinc-400">Zero IEEE-754 binary floating drift</p>
-                  </div>
-                </div>
-                <span className="text-[10px] font-mono font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 rounded-full">
-                  NUMERIC(12,2)
-                </span>
-              </div>
-
-              <p className="text-xs text-zinc-300 leading-relaxed">
-                Financial balances must never use binary float types. PlanLedger uses Python <code className="text-emerald-400 font-mono">Decimal</code> and PostgreSQL <code className="text-emerald-400 font-mono">NUMERIC(12,2)</code> with line-item tax and discount snapshots.
-              </p>
-
-              <div className="grid sm:grid-cols-2 gap-3 text-xs font-mono">
-                <div className="p-3 rounded-xl bg-black/60 border border-zinc-800">
-                  <div className="text-zinc-500 text-[10px]">MRR Normalization Standard</div>
-                  <div className="text-zinc-200 mt-1">Daily: daily_rate × 30.4375</div>
-                  <div className="text-zinc-200">Weekly: weekly_rate × (52 / 12)</div>
-                  <div className="text-emerald-400">Yearly: annual_price / 12</div>
-                </div>
-
-                <div className="p-3 rounded-xl bg-black/60 border border-zinc-800">
-                  <div className="text-zinc-500 text-[10px]">Audit Log Integrity</div>
-                  <div className="text-zinc-200 mt-1">actor: user_id (Argon2)</div>
-                  <div className="text-zinc-200">action: BILLING_INVOICE_GENERATED</div>
-                  <div className="text-emerald-400">changes: JSONB snapshot payload</div>
-                </div>
-              </div>
-            </div>
-
-            <div className="pt-4 mt-4 border-t border-zinc-800/80 flex items-center justify-between text-[11px] text-zinc-400">
-              <span className="text-emerald-400 font-semibold">Single INR Currency Mode</span>
-              <span className="font-mono">Sub-Cent Exact Rounding</span>
-            </div>
+          <div className="p-6 bg-[var(--bg-base)]">
+            <pre className="text-xs font-hash text-[var(--text-secondary)] overflow-x-auto leading-relaxed">
+              {SQL_TABS[tab]}
+            </pre>
           </div>
         </div>
+
       </div>
     </section>
   );

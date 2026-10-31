@@ -2,114 +2,126 @@
 
 import React from "react";
 import Link from "next/link";
-import { Layers, Github, ExternalLink, Heart, ShieldCheck } from "lucide-react";
+import { ExternalLink } from "lucide-react";
+import { SquareLogo } from "@/components/square-logo";
+import { ThemeToggle } from "@/components/theme-toggle";
+
+const FOOTER_LINKS = [
+  { label: "STATE MACHINE", href: "#simulator" },
+  { label: "DB GUARANTEES", href: "#bento" },
+  { label: "METRICS",       href: "#metrics" },
+  { label: "ARCHITECTURE",  href: "#architecture" },
+  { label: "TEAM",          href: "#team" },
+  { label: "PRICING",       href: "#pricing" },
+];
 
 export function Footer() {
   return (
-    <footer className="border-t border-zinc-800/80 bg-[#060708] py-16 relative overflow-hidden text-zinc-400 text-xs">
-      <div className="max-w-7xl mx-auto px-6 relative z-10">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-10 mb-12">
-          {/* Brand Info */}
-          <div className="md:col-span-2 space-y-4">
-            <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-400 to-cyan-500 p-[1px]">
-                <div className="w-full h-full bg-[#08090a] rounded-[7px] flex items-center justify-center">
-                  <Layers className="w-4 h-4 text-emerald-400" />
-                </div>
+    <footer className="relative bg-[var(--bg-surface)] border-t border-[var(--border-subtle)]">
+      <div className="absolute inset-0 arch-grid-fine opacity-10 pointer-events-none" />
+
+      <div className="max-w-[1400px] mx-auto px-6 lg:px-8 relative z-10">
+
+        {/* Top row */}
+        <div className="grid grid-cols-1 md:grid-cols-3 border-b border-[var(--border-subtle)] py-12 gap-10">
+
+          {/* Brand */}
+          <div className="flex flex-col gap-4">
+            <Link href="/" className="flex items-center gap-2.5">
+              <div className="w-9 h-9 rounded-2xl bg-[#C4B5FD] text-black flex items-center justify-center font-extrabold shadow-sm">
+                <SquareLogo size={18} />
               </div>
-              <span className="font-extrabold text-base tracking-tight text-white">
+              <span className="text-xl font-extrabold tracking-tight text-[var(--text-heading)]">
                 PlanLedger
               </span>
-            </div>
-            <p className="text-zinc-400 leading-relaxed max-w-sm">
-              Enterprise SaaS subscription engine and double-entry financial ledger platform built for the Odoo Hackathon 2026.
+            </Link>
+
+            <p className="text-xs text-[var(--text-secondary)] leading-relaxed max-w-[280px]">
+              Enterprise SaaS subscription engine and double-entry financial ledger. Built for the Odoo Hackathon 2026.
             </p>
-            <div className="flex items-center gap-2 text-[11px] text-zinc-400">
-              <span className="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              <span>Production Infrastructure Ready · Neon PostgreSQL 17</span>
+
+            <div className="flex items-center gap-2 text-xs font-hash text-[var(--text-muted)]">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span>POSTGRESQL 17 &middot; PRODUCTION READY</span>
+            </div>
+
+            <div className="pt-2">
+              <ThemeToggle variant="pill" />
             </div>
           </div>
 
-          {/* Core Modules */}
-          <div className="space-y-3">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-200">Platform Modules</h4>
-            <ul className="space-y-2 text-zinc-400 text-xs">
-              <li>
-                <a href="#simulator" className="hover:text-emerald-400 transition-colors">
-                  State Machine Simulator
-                </a>
-              </li>
-              <li>
-                <a href="#bento" className="hover:text-emerald-400 transition-colors">
-                  PostgreSQL 17 Guarantees
-                </a>
-              </li>
-              <li>
-                <a href="#metrics" className="hover:text-emerald-400 transition-colors">
-                  Live Financial Metrics
-                </a>
-              </li>
-              <li>
-                <a href="#architecture" className="hover:text-emerald-400 transition-colors">
-                  Technical Architecture
-                </a>
-              </li>
-              <li>
-                <Link href="/pricing" className="hover:text-emerald-400 transition-colors">
-                  Subscription Plans
-                </Link>
-              </li>
+          {/* Nav links */}
+          <div className="space-y-4">
+            <div className="text-xs font-bold uppercase tracking-widest text-[var(--text-muted)] font-hash">
+              Platform Modules
+            </div>
+            <ul className="grid grid-cols-2 gap-3">
+              {FOOTER_LINKS.map((link) => (
+                <li key={link.label}>
+                  <a
+                    href={link.href}
+                    className="text-xs font-semibold text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+                  >
+                    {link.label}
+                  </a>
+                </li>
+              ))}
             </ul>
           </div>
 
-          {/* GitHub & Team */}
-          <div className="space-y-3">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-200">Team Ownership</h4>
-            <div className="space-y-2.5 text-xs">
+          {/* Team links */}
+          <div className="space-y-4">
+            <div className="text-xs font-bold uppercase tracking-widest text-[var(--text-muted)] font-hash">
+              Engineering Governance
+            </div>
+            <div className="flex flex-col gap-3">
               <a
                 href="https://github.com/Reshma-04sk"
                 target="_blank"
                 rel="noreferrer"
-                className="flex items-center justify-between p-2 rounded-lg bg-zinc-900/60 border border-zinc-800/80 hover:border-zinc-700 transition-colors group"
+                className="p-3.5 rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-elevated)] hover:border-[#C4B5FD] transition-colors flex items-center justify-between group"
               >
                 <div>
-                  <div className="font-semibold text-zinc-200 group-hover:text-emerald-400 transition-colors">
+                  <div className="text-xs font-extrabold text-[var(--text-heading)] mb-0.5">
                     Reshma Shaik
                   </div>
-                  <div className="text-[10px] text-zinc-400">M1 · Team Lead & Backend</div>
+                  <div className="text-[10px] font-hash text-[var(--text-muted)]">
+                    M1 &middot; Team Lead &amp; Backend
+                  </div>
                 </div>
-                <ExternalLink className="w-3.5 h-3.5 text-zinc-400 group-hover:text-white" />
+                <ExternalLink className="w-4 h-4 text-[var(--text-muted)] group-hover:text-[#C4B5FD] transition-colors" />
               </a>
 
               <a
                 href="https://github.com/gaayathri-devi-07"
                 target="_blank"
                 rel="noreferrer"
-                className="flex items-center justify-between p-2 rounded-lg bg-zinc-900/60 border border-zinc-800/80 hover:border-zinc-700 transition-colors group"
+                className="p-3.5 rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-elevated)] hover:border-[#A78BFA] transition-colors flex items-center justify-between group"
               >
                 <div>
-                  <div className="font-semibold text-zinc-200 group-hover:text-cyan-400 transition-colors">
+                  <div className="text-xs font-extrabold text-[var(--text-heading)] mb-0.5">
                     Gayathri Devi G
                   </div>
-                  <div className="text-[10px] text-zinc-400">M2 · Frontend Lead & UX</div>
+                  <div className="text-[10px] font-hash text-[var(--text-muted)]">
+                    M2 &middot; Frontend Lead &amp; UX
+                  </div>
                 </div>
-                <ExternalLink className="w-3.5 h-3.5 text-zinc-400 group-hover:text-white" />
+                <ExternalLink className="w-4 h-4 text-[var(--text-muted)] group-hover:text-[#A78BFA] transition-colors" />
               </a>
             </div>
           </div>
         </div>
 
-        {/* Bottom Credits */}
-        <div className="pt-8 border-t border-zinc-900 flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] text-zinc-400">
-          <div>
-            © 2026 PlanLedger. Built with Next.js 16 (App Router), Django 6, PostgreSQL 17 &amp; Tailwind CSS v4.
-          </div>
+        {/* Bottom bar */}
+        <div className="py-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-hash text-[var(--text-muted)]">
+          <span>&copy; 2026 PlanLedger. Next.js 16 / Django 6 / PostgreSQL 17 / Tailwind CSS v4.</span>
           <div className="flex items-center gap-4">
-            <span className="text-zinc-400">Odoo Hackathon 2026</span>
-            <span>•</span>
-            <span className="text-emerald-400 font-mono">100% Idempotent</span>
+            <span>ODDO HACKATHON 2026</span>
+            <span>&middot;</span>
+            <span className="text-emerald-500 font-bold">100% IDEMPOTENT BILLING</span>
           </div>
         </div>
+
       </div>
     </footer>
   );

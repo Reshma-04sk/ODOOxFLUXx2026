@@ -1,10 +1,12 @@
-"use client";
+﻿"use client";
 
+import { SquareLogo } from "@/components/square-logo";
 import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Sparkles, ArrowRight, Lock, Mail, Building, User as UserIcon, Loader2, AlertCircle } from "lucide-react";
+import { ArrowRight, Lock, Mail, Building, User as UserIcon, Loader2, AlertCircle, ArrowLeft } from "lucide-react";
 import { apiService } from "@/services/api-service";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -37,79 +39,93 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#070b12] text-slate-100 flex flex-col justify-center items-center px-4 py-12">
-      <div className="w-full max-w-md space-y-8">
+    <div className="min-h-screen arch-grid-bg text-[var(--text-primary)] flex flex-col justify-center items-center px-4 relative py-12">
+      {/* Top Navigation Bar with Back and Theme Toggle */}
+      <div className="absolute top-6 left-6 right-6 max-w-5xl mx-auto flex items-center justify-between z-20">
+        <Link
+          href="/"
+          className="inline-flex items-center gap-2 text-xs font-semibold text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors px-3 py-1.5 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] shadow-sm"
+        >
+          <ArrowLeft className="w-3.5 h-3.5" />
+          <span>Back to Landing</span>
+        </Link>
+        <ThemeToggle variant="pill" />
+      </div>
+
+      <div className="w-full max-w-md space-y-6 relative z-10 mt-8">
         {/* Brand Header */}
         <div className="text-center space-y-2">
           <Link href="/" className="inline-flex items-center gap-2.5">
-            <div className="h-10 w-10 rounded-xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-cyan-400 flex items-center justify-center shadow-lg shadow-blue-500/25">
-              <Sparkles className="w-5 h-5 text-white" />
+            <div className="w-10 h-10 rounded-2xl bg-[#C4B5FD] text-black flex items-center justify-center font-extrabold shadow-md">
+              <SquareLogo size={18} />
             </div>
-            <span className="font-bold text-2xl text-white tracking-tight">PlanLedger</span>
+            <span className="font-extrabold text-2xl tracking-tight text-[var(--text-heading)]">PlanLedger</span>
           </Link>
-          <h2 className="text-2xl font-bold tracking-tight text-white mt-4">Create your account</h2>
-          <p className="text-xs text-slate-400">Launch your subscription management workspace in seconds</p>
+          <h2 className="text-2xl font-extrabold tracking-tight text-[var(--text-heading)] mt-3">Create Account</h2>
+          <p className="text-xs text-[var(--text-secondary)] font-medium">
+            Launch your subscription operations workspace in seconds
+          </p>
         </div>
 
-        {/* Card */}
-        <div className="glass-card p-8 rounded-2xl border border-slate-800 shadow-2xl">
+        {/* Floating FinTech Card */}
+        <div className="fintech-card p-8">
           {error && (
-            <div className="mb-6 p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-xs text-rose-400 flex items-center gap-2">
+            <div className="mb-6 p-3.5 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-xs text-rose-500 flex items-center gap-2.5">
               <AlertCircle className="w-4 h-4 shrink-0" />
-              <span>{error}</span>
+              <span className="font-medium">{error}</span>
             </div>
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-slate-300">Full Name</label>
+              <label className="text-xs font-bold uppercase tracking-wider text-[var(--text-secondary)]">Full Name</label>
               <div className="relative">
-                <UserIcon className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                <UserIcon className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--text-muted)]" />
                 <input
                   type="text"
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
                   required
                   placeholder="Aarav Sharma"
-                  className="w-full bg-slate-900 border border-slate-800 rounded-xl pl-9 pr-4 py-2.5 text-sm text-slate-100 placeholder:text-slate-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
+                  className="w-full bg-[var(--bg-elevated)] border border-[var(--border-subtle)] rounded-2xl pl-10 pr-4 py-3 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[#C4B5FD] transition-all"
                 />
               </div>
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-slate-300">Company / Organization</label>
+              <label className="text-xs font-bold uppercase tracking-wider text-[var(--text-secondary)]">Company / Organization</label>
               <div className="relative">
-                <Building className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                <Building className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--text-muted)]" />
                 <input
                   type="text"
                   value={companyName}
                   onChange={(e) => setCompanyName(e.target.value)}
                   required
                   placeholder="Apex Cloud Technologies"
-                  className="w-full bg-slate-900 border border-slate-800 rounded-xl pl-9 pr-4 py-2.5 text-sm text-slate-100 placeholder:text-slate-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
+                  className="w-full bg-[var(--bg-elevated)] border border-[var(--border-subtle)] rounded-2xl pl-10 pr-4 py-3 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[#C4B5FD] transition-all"
                 />
               </div>
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-slate-300">Work Email</label>
+              <label className="text-xs font-bold uppercase tracking-wider text-[var(--text-secondary)]">Work Email</label>
               <div className="relative">
-                <Mail className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                <Mail className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--text-muted)]" />
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
                   placeholder="aarav@apexcloud.io"
-                  className="w-full bg-slate-900 border border-slate-800 rounded-xl pl-9 pr-4 py-2.5 text-sm text-slate-100 placeholder:text-slate-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
+                  className="w-full bg-[var(--bg-elevated)] border border-[var(--border-subtle)] rounded-2xl pl-10 pr-4 py-3 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[#C4B5FD] transition-all"
                 />
               </div>
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-slate-300">Password</label>
+              <label className="text-xs font-bold uppercase tracking-wider text-[var(--text-secondary)]">Password</label>
               <div className="relative">
-                <Lock className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                <Lock className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--text-muted)]" />
                 <input
                   type="password"
                   value={password}
@@ -117,7 +133,7 @@ export default function RegisterPage() {
                   required
                   minLength={8}
                   placeholder="Minimum 8 characters"
-                  className="w-full bg-slate-900 border border-slate-800 rounded-xl pl-9 pr-4 py-2.5 text-sm text-slate-100 placeholder:text-slate-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
+                  className="w-full bg-[var(--bg-elevated)] border border-[var(--border-subtle)] rounded-2xl pl-10 pr-4 py-3 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[#C4B5FD] transition-all"
                 />
               </div>
             </div>
@@ -125,7 +141,7 @@ export default function RegisterPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full mt-2 py-3 rounded-xl text-sm font-semibold text-white bg-blue-600 hover:bg-blue-500 disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg shadow-blue-500/25 transition-all hover:scale-[1.02] active:scale-[0.98]"
+              className="w-full mt-2 py-3.5 rounded-2xl text-xs font-bold uppercase tracking-wider btn-neon flex items-center justify-center gap-2 shadow-lg disabled:opacity-50"
             >
               {loading ? (
                 <>
@@ -142,9 +158,9 @@ export default function RegisterPage() {
           </form>
         </div>
 
-        <div className="text-center text-xs text-slate-400">
+        <div className="text-center text-xs text-[var(--text-secondary)] font-medium">
           Already have an account?{" "}
-          <Link href="/login" className="text-blue-400 font-semibold hover:underline">
+          <Link href="/login" className="text-[#7C3AED] dark:text-[#A78BFA] font-bold hover:underline">
             Sign in
           </Link>
         </div>

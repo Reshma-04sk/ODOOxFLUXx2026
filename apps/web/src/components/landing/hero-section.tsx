@@ -1,104 +1,222 @@
-ï»¿"use client";
+"use client";
 
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import Link from "next/link";
-import dynamic from "next/dynamic";
-import { ArrowRight, ShieldCheck, Zap, Database, Terminal, ChevronDown } from "lucide-react";
-import { KineticText } from "./kinetic-text";
+import { gsap } from "gsap";
 
-// Lazy load the 3D canvas with ssr: false for fast initial load
-const Hero3DCanvas = dynamic(
-  () => import("./hero-3d-canvas").then((mod) => mod.Hero3DCanvas),
-  {
-    ssr: false,
-    loading: () => (
-      <div className="absolute inset-0 bg-radial-vignette flex items-center justify-center">
-        <div className="w-[450px] h-[450px] rounded-full bg-emerald-500/10 blur-3xl animate-pulse" />
-      </div>
-    ),
-  }
-);
-
-export function HeroSection() {
+/* --- SVG Topographic Pattern -------------------------------- */
+function TopoLines() {
   return (
-    <section className="relative min-h-screen flex flex-col justify-center items-center pt-32 pb-20 px-6 overflow-hidden bg-[#08090a]">
-      {/* 3D Canvas Background */}
-      <Hero3DCanvas />
+    <div className="absolute inset-0 overflow-hidden pointer-events-none z-0 opacity-[0.07]">
+      <svg
+        viewBox="0 0 1440 900"
+        className="absolute inset-0 w-full h-full topo-animate"
+        preserveAspectRatio="xMidYMid slice"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <defs>
+          <style>{`.tl{fill:none;stroke:#ADC2D5;stroke-width:1;}`}</style>
+        </defs>
+        {/* Concentric topographic contours */}
+        <ellipse className="tl" cx="720" cy="450" rx="680" ry="390" />
+        <ellipse className="tl" cx="720" cy="450" rx="580" ry="320" />
+        <ellipse className="tl" cx="720" cy="450" rx="480" ry="255" />
+        <ellipse className="tl" cx="720" cy="450" rx="380" ry="195" />
+        <ellipse className="tl" cx="720" cy="450" rx="290" ry="145" />
+        <ellipse className="tl" cx="720" cy="450" rx="205" ry="100" />
+        <ellipse className="tl" cx="720" cy="450" rx="128" ry="62" />
+        <ellipse className="tl" cx="720" cy="450" rx="62"  ry="30" />
+        {/* Displaced rings — upper-left cluster */}
+        <ellipse className="tl" cx="160"  cy="200" rx="340" ry="200" />
+        <ellipse className="tl" cx="160"  cy="200" rx="240" ry="140" />
+        <ellipse className="tl" cx="160"  cy="200" rx="140" ry="82"  />
+        <ellipse className="tl" cx="160"  cy="200" rx="66"  ry="38"  />
+        {/* Lower-right cluster */}
+        <ellipse className="tl" cx="1300" cy="780" rx="320" ry="190" />
+        <ellipse className="tl" cx="1300" cy="780" rx="210" ry="122" />
+        <ellipse className="tl" cx="1300" cy="780" rx="110" ry="64"  />
+        {/* Diagonal flow lines */}
+        <path className="tl" d="M0,400 Q360,280 720,420 T1440,380" />
+        <path className="tl" d="M0,500 Q360,360 720,510 T1440,460" />
+        <path className="tl" d="M0,580 Q360,430 720,590 T1440,540" />
+        <path className="tl" d="M0,300 Q360,200 720,330 T1440,290" />
+        <path className="tl" d="M0,620 Q480,510 720,650 T1440,600" />
+        {/* Extra density lines */}
+        <path className="tl" d="M0,160 Q300,100 700,200 Q1000,280 1440,180" />
+        <path className="tl" d="M0,700 Q400,640 720,720 Q1050,800 1440,720" />
+      </svg>
+    </div>
+  );
+}
 
-      {/* Subtle radial mesh gradient overlays */}
-      <div className="absolute inset-0 bg-radial-vignette pointer-events-none z-[1]" />
-      <div className="absolute inset-0 bg-grid-pattern opacity-15 pointer-events-none z-[1]" />
+/* --- Hero Section -------------------------------------------- */
+export function HeroSection() {
+  const sectionRef = useRef<HTMLElement>(null);
+  const wordsRef   = useRef<HTMLSpanElement[]>([]);
 
-      <div className="max-w-5xl mx-auto text-center relative z-10 space-y-8">
-        {/* Eyebrow Badge */}
-        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold bg-emerald-950/40 border border-emerald-500/30 text-emerald-400 shadow-lg shadow-emerald-500/10 backdrop-blur-md">
-          <span className="relative flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+  const addWord = (el: HTMLSpanElement | null, i: number) => {
+    if (el) wordsRef.current[i] = el;
+  };
+
+  const LINES = ["ENGINEERED", "FOR ABSOLUTE", "PRECISION."];
+
+  useEffect(() => {
+    const ctx = gsap.context(() => {
+      // Staggered mask-reveal on load
+      gsap.to(wordsRef.current, {
+        y: 0,
+        duration: 1.1,
+        ease: "power4.out",
+        stagger: 0.12,
+        delay: 0.3,
+      });
+
+      // Subtle parallax on scroll
+      gsap.to(sectionRef.current, {
+        yPercent: -8,
+        ease: "none",
+        scrollTrigger: {
+          trigger: sectionRef.current,
+          start: "top top",
+          end: "bottom top",
+          scrub: true,
+        },
+      });
+    }, sectionRef);
+
+    return () => ctx.revert();
+  }, []);
+
+  return (
+    <section
+      ref={sectionRef}
+      id="hero"
+      className="relative min-h-screen flex flex-col justify-center arch-grid-bg overflow-hidden"
+    >
+      {/* Topographic Lines Background */}
+      <TopoLines />
+
+      {/* Deep vignette so center content pops */}
+      <div
+        className="absolute inset-0 pointer-events-none z-[1]"
+        style={{
+          background:
+            "radial-gradient(ellipse 80% 70% at 50% 50%, transparent 40%, #06141B 100%)",
+        }}
+      />
+
+      {/* Horizontal rule lines — structural feel */}
+      <div className="absolute top-0 left-0 right-0 h-px bg-[#253745] z-[2]" style={{ top: "56px" }} />
+      <div className="absolute bottom-0 left-0 right-0 h-px bg-[#253745] z-[2]" />
+
+      {/* Main content */}
+      <div className="relative z-10 max-w-[1400px] mx-auto px-8 pt-32 pb-24 w-full">
+
+        {/* Overline */}
+        <div
+          className="flex items-center gap-4 mb-10"
+          style={{ fontFamily: "var(--font-space-mono)" }}
+        >
+          <div className="w-8 h-px bg-[#5A7896]" />
+          <span className="mono-label text-[#5A7896]">
+            ODOO HACKATHON 2026 — SUBSCRIPTION MANAGEMENT PLATFORM
           </span>
-          <span>Odoo Hackathon 2026 â€¢ Enterprise-Grade Subscription Engine</span>
+          <div className="flex-1 h-px bg-[#253745]" />
+          <div className="w-2 h-2 border border-[#5A7896] rotate-45" />
         </div>
 
-        {/* Kinetic Headline with Serif Italic Accent */}
-        <KineticText />
+        {/* Massive display headline — mask reveal */}
+        <h1
+          className="display-text text-[clamp(3rem,9vw,9.5rem)] leading-none tracking-[-0.04em] mb-12"
+          style={{ fontFamily: "var(--font-space-grotesk)" }}
+          aria-label="Engineered for Absolute Precision"
+        >
+          {LINES.map((line, li) => (
+            <span key={li} className="block">
+              {line.split(" ").map((word, wi) => {
+                const idx = li * 3 + wi;
+                return (
+                  <span key={wi} className="word-mask mr-[0.22em]">
+                    <span
+                      ref={(el) => addWord(el, idx)}
+                      className="word-inner"
+                    >
+                      {word}
+                    </span>
+                  </span>
+                );
+              })}
+            </span>
+          ))}
+        </h1>
 
-        {/* Subheadline */}
-        <p className="text-base sm:text-lg md:text-xl text-zinc-300 max-w-3xl mx-auto leading-relaxed font-normal">
-          Automate recurring billing, eliminate revenue leakage, and calculate true MRR/ARR with sub-millisecond database constraints and transaction safety.
-        </p>
-
-        {/* Primary and Secondary Action CTAs */}
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
-          <Link
-            href="/dashboard"
-            className="w-full sm:w-auto px-8 py-3.5 rounded-xl text-sm font-bold text-emerald-950 bg-gradient-to-r from-emerald-400 via-teal-300 to-emerald-400 hover:from-emerald-300 hover:to-teal-200 transition-all shadow-xl shadow-emerald-500/25 hover:shadow-emerald-500/40 hover:scale-[1.02] flex items-center justify-center gap-2 group cursor-pointer"
-          >
-            <span>Launch App Console</span>
-            <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-          </Link>
-
-          <a
-            href="#architecture"
-            className="w-full sm:w-auto px-7 py-3.5 rounded-xl text-sm font-semibold text-zinc-200 hover:text-white glass-card hover:border-emerald-500/50 transition-all flex items-center justify-center gap-2 cursor-pointer"
-          >
-            <Terminal className="w-4 h-4 text-emerald-400" />
-            <span>Explore Technical Architecture</span>
-          </a>
+        {/* Descriptor row */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-0 border border-[#253745] max-w-3xl">
+          <div className="p-6 border-b md:border-b-0 md:border-r border-[#253745]">
+            <p
+              className="text-sm text-[#88A7C1] leading-relaxed"
+              style={{ fontFamily: "var(--font-space-grotesk)" }}
+            >
+              Automate recurring billing. Eliminate revenue leakage.
+              Calculate true MRR/ARR with sub-millisecond database constraints
+              and ACID transaction isolation.
+            </p>
+          </div>
+          <div className="p-6 flex flex-col justify-between gap-4">
+            <div
+              className="grid grid-cols-2 gap-x-6 gap-y-2 text-[10px] tracking-[0.12em] text-[#5A7896]"
+              style={{ fontFamily: "var(--font-space-mono)" }}
+            >
+              <span>POSTGRESQL 17</span>
+              <span>DJANGO 6</span>
+              <span>NEXT.JS 16</span>
+              <span>ACID ISOLATION</span>
+            </div>
+            <div className="flex items-center gap-3 pt-2 border-t border-[#253745]">
+              <Link
+                href="/dashboard"
+                className="px-6 py-2 bg-[#ADC2D5] text-[#06141B] font-bold text-xs tracking-[0.15em] uppercase hover:bg-[#CCD0CF] transition-colors duration-200"
+                style={{ fontFamily: "var(--font-space-mono)" }}
+              >
+                LAUNCH APP
+              </Link>
+              <a
+                href="#architecture"
+                className="px-5 py-2 border border-[#253745] text-[#5A7896] hover:border-[#5A7896] hover:text-[#ADC2D5] transition-all duration-200 text-xs tracking-[0.12em] uppercase"
+                style={{ fontFamily: "var(--font-space-mono)" }}
+              >
+                READ DOCS
+              </a>
+            </div>
+          </div>
         </div>
 
-        {/* Technical Trust Badges */}
-        <div className="pt-10 flex flex-wrap items-center justify-center gap-4 sm:gap-8 text-xs font-mono text-zinc-400 border-t border-zinc-800/60 max-w-3xl mx-auto">
-          <div className="flex items-center gap-2">
-            <Database className="w-3.5 h-3.5 text-emerald-400" />
-            <span>PostgreSQL 17</span>
-          </div>
-          <span className="text-zinc-700 hidden sm:inline">â€¢</span>
-          <div className="flex items-center gap-2">
-            <ShieldCheck className="w-3.5 h-3.5 text-cyan-400" />
-            <span>Django 6 ACID Engine</span>
-          </div>
-          <span className="text-zinc-700 hidden sm:inline">â€¢</span>
-          <div className="flex items-center gap-2">
-            <Zap className="w-3.5 h-3.5 text-amber-400" />
-            <span>Next.js 16 App Router</span>
-          </div>
-          <span className="text-zinc-700 hidden sm:inline">â€¢</span>
-          <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-emerald-400" />
-            <span>Zero Floating Drift (ROUND_HALF_UP)</span>
-          </div>
+        {/* Bottom scroll indicator */}
+        <div
+          className="mt-20 flex items-center gap-3 text-[10px] text-[#5A7896]"
+          style={{ fontFamily: "var(--font-space-mono)" }}
+        >
+          <span className="tracking-[0.15em]">SCROLL TO EXPLORE</span>
+          <div className="flex-1 h-px bg-[#253745] max-w-[120px]" />
+          <div className="w-px h-6 bg-[#253745] animate-pulse" />
         </div>
       </div>
 
-      {/* Down arrow scroll indicator */}
-      <a
-        href="#simulator"
-        className="absolute bottom-6 left-1/2 -translate-x-1/2 text-zinc-500 hover:text-emerald-400 transition-colors z-10 flex flex-col items-center gap-1 cursor-pointer"
-        aria-label="Scroll down"
+      {/* Right-edge vertical data label */}
+      <div
+        className="absolute right-8 top-1/2 -translate-y-1/2 flex flex-col items-center gap-2 z-10 hidden xl:flex"
+        style={{ fontFamily: "var(--font-space-mono)" }}
       >
-        <span className="text-[10px] font-mono tracking-widest uppercase">Explore</span>
-        <ChevronDown className="w-4 h-4 animate-bounce" />
-      </a>
+        <div className="w-px h-24 bg-[#253745]" />
+        <span
+          className="text-[9px] tracking-[0.3em] text-[#5A7896] uppercase"
+          style={{ writingMode: "vertical-rl" }}
+        >
+          BUILD/2026/PLANLEDGER
+        </span>
+        <div className="w-px h-24 bg-[#253745]" />
+      </div>
     </section>
   );
 }
+

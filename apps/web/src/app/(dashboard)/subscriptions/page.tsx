@@ -1,9 +1,9 @@
 "use client";
 
 import React, { useState } from "react";
-import { Plus, Search, Filter, Play, Pause, XCircle } from "lucide-react";
+import { Plus, Search, Play, Pause, XCircle } from "lucide-react";
 import { DashboardShell } from "@/components/layout/dashboard-shell";
-import { MOCK_SUBSCRIPTIONS, MOCK_PLANS } from "@/services/mock-data";
+import { MOCK_SUBSCRIPTIONS } from "@/services/mock-data";
 import { formatDate, formatINR } from "@/lib/utils";
 import { toast } from "sonner";
 

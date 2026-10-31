@@ -1,7 +1,6 @@
 "use client";
 
 import React from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Bell, Search, LogOut, CheckCircle2 } from "lucide-react";
 import { apiService } from "@/services/api-service";

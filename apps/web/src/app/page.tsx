@@ -1,4 +1,4 @@
-﻿import React from "react";
+import React from "react";
 import {
   Navbar,
   HeroSection,
@@ -13,7 +13,7 @@ import {
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-[#08090a] text-zinc-100 selection:bg-emerald-500/20 selection:text-emerald-300 font-sans">
+    <div className="min-h-screen bg-[#06141B] text-[#CCD0CF]">
       <Navbar />
       <main>
         <HeroSection />
@@ -28,3 +28,4 @@ export default function LandingPage() {
     </div>
   );
 }
+

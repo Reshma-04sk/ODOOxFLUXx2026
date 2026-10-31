@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Plus, Search, Zap, CheckCircle2, AlertCircle } from "lucide-react";
+import { Plus, Search, CheckCircle2 } from "lucide-react";
 import { DashboardShell } from "@/components/layout/dashboard-shell";
 import { MOCK_PAYMENTS } from "@/services/mock-data";
 import { formatDate, formatINR } from "@/lib/utils";

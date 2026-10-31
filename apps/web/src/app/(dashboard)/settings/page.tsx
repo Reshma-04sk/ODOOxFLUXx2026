@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Save, Key, Mail, Building, ShieldCheck, CheckCircle2 } from "lucide-react";
+import { Save, Key, Mail, Building } from "lucide-react";
 import { DashboardShell } from "@/components/layout/dashboard-shell";
 import { toast } from "sonner";
 

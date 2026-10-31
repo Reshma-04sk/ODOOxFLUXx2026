@@ -4,7 +4,6 @@ import React, { useState } from "react";
 import Link from "next/link";
 import {
   TrendingUp,
-  Users,
   CreditCard,
   FileText,
   AlertTriangle,
@@ -15,7 +14,7 @@ import {
 } from "lucide-react";
 import { DashboardShell } from "@/components/layout/dashboard-shell";
 import { formatINR, formatDate } from "@/lib/utils";
-import { MOCK_KPIS, MOCK_SUBSCRIPTIONS, MOCK_INVOICES } from "@/services/mock-data";
+import { MOCK_KPIS, MOCK_SUBSCRIPTIONS } from "@/services/mock-data";
 import { toast } from "sonner";
 import {
   AreaChart,

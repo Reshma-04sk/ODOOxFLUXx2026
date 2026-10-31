@@ -1,14 +1,14 @@
 "use client";
 
 import React, { useState } from "react";
-import { Plus, Search, Building2, Mail, Phone, MapPin, Receipt } from "lucide-react";
+import { Plus, Search, Mail, MapPin, Receipt } from "lucide-react";
 import { DashboardShell } from "@/components/layout/dashboard-shell";
 import { MOCK_CUSTOMERS } from "@/services/mock-data";
 import { formatINR } from "@/lib/utils";
 import { toast } from "sonner";
 
 export default function CustomersPage() {
-  const [customers, setCustomers] = useState(MOCK_CUSTOMERS);
+  const [customers] = useState(MOCK_CUSTOMERS);
   const [searchTerm, setSearchTerm] = useState("");
 
   const filtered = customers.filter(

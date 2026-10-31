@@ -1,266 +1,231 @@
-﻿"use client";
+"use client";
 
-import React, { useState } from "react";
-import {
-  Layers,
-  Server,
-  Database,
-  ShieldCheck,
-  Code2,
-  FileCode,
-  Terminal,
-  CheckCircle,
-  Copy,
-  ExternalLink,
-} from "lucide-react";
+import React, { useEffect, useRef } from "react";
+import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 
-type ArchTab = "monorepo" | "erd" | "auth" | "benchmark";
+if (typeof window !== "undefined") {
+  gsap.registerPlugin(ScrollTrigger);
+}
+
+const DB_GUARANTEES = [
+  {
+    code: "PG-01",
+    title: "PARTIAL UNIQUE INDEX",
+    constraint: "uq_invoice_subscription_period",
+    body: "Prevents duplicate invoice generation for the same subscription in the same billing period. Enforced at the PostgreSQL 17 storage layer — application logic cannot override this.",
+    sql: "CREATE UNIQUE INDEX uq_invoice_subscription_period\n  ON invoices(subscription_id, billing_period_start)\n  WHERE status NOT IN ('cancelled', 'void');",
+  },
+  {
+    code: "PG-02",
+    title: "DECIMAL PRECISION GUARANTEE",
+    constraint: "ROUND_HALF_UP via Python Decimal",
+    body: "All monetary values use Python's decimal.Decimal with ROUND_HALF_UP quantization. No IEEE 754 floating-point arithmetic is used anywhere in the billing pipeline.",
+    sql: "tax = Decimal(str(taxable_subtotal * tax_rate))\n  .quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)",
+  },
+  {
+    code: "PG-03",
+    title: "FOREIGN KEY CHAIN INTEGRITY",
+    constraint: "ON DELETE PROTECT / RESTRICT",
+    body: "Subscriptions cannot be deleted while active invoices exist. Invoice lines reference immutable price snapshots, not the live product table. Orphan records are structurally impossible.",
+    sql: "FOREIGN KEY (subscription_id)\n  REFERENCES subscriptions(id)\n  ON DELETE RESTRICT\n  DEFERRABLE INITIALLY DEFERRED;",
+  },
+  {
+    code: "PG-04",
+    title: "STATE MACHINE ENFORCEMENT",
+    constraint: "CHECK constraint on status column",
+    body: "Subscription and invoice status transitions are restricted by a PostgreSQL CHECK constraint. Invalid state transitions (e.g. paid → active) are rejected at the DB layer, not just the API.",
+    sql: "ALTER TABLE subscriptions\n  ADD CONSTRAINT valid_status\n  CHECK (status IN ('trial','active','paused',\n    'cancelled','expired'));",
+  },
+  {
+    code: "PG-05",
+    title: "IDEMPOTENT BILLING SCHEDULER",
+    constraint: "Atomicity via Django transaction.atomic()",
+    body: "The billing scheduler uses idempotency keys. Re-running the scheduler for the same period is completely safe — the unique index absorbs the conflict and the transaction rolls back cleanly.",
+    sql: "with transaction.atomic():\n  Invoice.objects.create(\n    idempotency_key=f'{sub.id}:{period}'\n  )  # ON CONFLICT: no-op, no exception",
+  },
+  {
+    code: "PG-06",
+    title: "SECURITY — ARGON2 + BOLA",
+    constraint: "Argon2id password hashing, row-level filters",
+    body: "Passwords hashed with Argon2id (memory-hard). All subscription/invoice queries are tenant-scoped by user FK — cross-tenant data access is structurally prevented at the ORM layer.",
+    sql: "queryset = Invoice.objects.filter(\n  subscription__customer__user=request.user\n)  # BOLA protection: row-level isolation",
+  },
+];
+
+const ARCH_LAYERS = [
+  { layer: "PRESENTATION", tech: "Next.js 16 / App Router", detail: "apps/web — SSR + Static pages, TanStack Query, Lenis + GSAP" },
+  { layer: "API GATEWAY",  tech: "same-origin /api/* rewrite", detail: "Next.js proxies /api/* to Django — no CORS, single domain" },
+  { layer: "BUSINESS",     tech: "Django 6 + DRF", detail: "apps/api — Billing engine, state machine, OpenAPI 3.1 schema" },
+  { layer: "DATA",         tech: "PostgreSQL 17 (Neon)", detail: "apps/api — Partial indexes, FK chains, CHECK constraints" },
+];
 
 export function ArchitectureDeepdive() {
-  const [activeTab, setActiveTab] = useState<ArchTab>("monorepo");
-  const [copied, setCopied] = useState(false);
+  const sectionRef = useRef<HTMLElement>(null);
 
-  const handleCopy = (text: string) => {
-    navigator.clipboard.writeText(text);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
+  useEffect(() => {
+    const ctx = gsap.context(() => {
+      gsap.fromTo(
+        ".guarantee-row",
+        { x: -20, opacity: 0 },
+        {
+          x: 0,
+          opacity: 1,
+          stagger: 0.07,
+          duration: 0.55,
+          ease: "power2.out",
+          scrollTrigger: {
+            trigger: sectionRef.current,
+            start: "top 72%",
+          },
+        }
+      );
+
+      gsap.fromTo(
+        ".arch-layer",
+        { y: 16, opacity: 0 },
+        {
+          y: 0,
+          opacity: 1,
+          stagger: 0.08,
+          duration: 0.5,
+          ease: "power2.out",
+          scrollTrigger: {
+            trigger: ".arch-layers-container",
+            start: "top 80%",
+          },
+        }
+      );
+    }, sectionRef);
+    return () => ctx.revert();
+  }, []);
 
   return (
-    <section id="architecture" className="py-24 border-t border-zinc-800/80 bg-zinc-950/80 relative">
-      <div className="max-w-7xl mx-auto px-6 relative z-10">
-        <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-            <Server className="w-3.5 h-3.5" />
-            <span>Under the Hood</span>
+    <section
+      ref={sectionRef}
+      id="architecture"
+      className="relative bg-[#0B1826] border-t border-[#253745]"
+    >
+      <div className="absolute inset-0 arch-grid-fine opacity-15 pointer-events-none" />
+
+      {/* ── Header ── */}
+      <div className="max-w-[1400px] mx-auto px-8 py-10 border-b border-[#253745] flex items-start md:items-center justify-between gap-4 relative z-10 flex-wrap">
+        <div>
+          <div className="flex items-center gap-4 mb-2" style={{ fontFamily: "var(--font-space-mono)" }}>
+            <div className="w-2 h-2 border border-[#5A7896] rotate-45" />
+            <span className="mono-label text-[#5A7896]">TECHNICAL ARCHITECTURE</span>
           </div>
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white tracking-tight">
-            Production-Grade <span className="font-serif italic font-normal text-emerald-400">Technical Architecture</span>
+          <h2
+            className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-[-0.04em] text-[#ADC2D5] leading-none"
+            style={{ fontFamily: "var(--font-space-grotesk)" }}
+          >
+            DATABASE GUARANTEES
           </h2>
-          <p className="text-zinc-400 text-sm sm:text-base">
-            Every layer of PlanLedger is architected according to the Odoo Hackathon specification, eliminating bloat while maximizing reliability and speed.
-          </p>
+        </div>
+        <div className="text-right hidden md:block" style={{ fontFamily: "var(--font-space-mono)" }}>
+          <div className="mono-label text-[#5A7896] mb-1">IMPLEMENTATION DEPTH</div>
+          <div className="text-xs text-[#ADC2D5]">6 CONSTRAINTS / POSTGRESQL 17</div>
+        </div>
+      </div>
+
+      <div className="max-w-[1400px] mx-auto px-8 relative z-10">
+
+        {/* ── DB Guarantee List ── */}
+        <div className="divide-y divide-[#253745] border-b border-[#253745] mb-0">
+          {DB_GUARANTEES.map((g, i) => (
+            <div
+              key={g.code}
+              className="guarantee-row opacity-0 grid grid-cols-1 lg:grid-cols-12 py-8 gap-6 lg:gap-0 group"
+            >
+              {/* Code + Index */}
+              <div className="lg:col-span-2 flex items-start gap-4 lg:gap-0 lg:flex-col justify-between lg:justify-start lg:pr-6">
+                <span
+                  className="text-xs font-bold text-[#3A5468] tabular-nums"
+                  style={{ fontFamily: "var(--font-space-mono)" }}
+                >
+                  {String(i + 1).padStart(2, "0")} / {DB_GUARANTEES.length}
+                </span>
+                <span
+                  className="text-[10px] font-bold tracking-[0.15em] text-[#5A7896] border border-[#253745] px-2 py-0.5 lg:mt-2"
+                  style={{ fontFamily: "var(--font-space-mono)" }}
+                >
+                  {g.code}
+                </span>
+              </div>
+
+              {/* Title + body */}
+              <div className="lg:col-span-4 lg:border-l lg:border-[#253745] lg:pl-6 pr-0 lg:pr-6">
+                <div
+                  className="text-sm font-bold tracking-[0.08em] text-[#ADC2D5] mb-1"
+                  style={{ fontFamily: "var(--font-space-grotesk)" }}
+                >
+                  {g.title}
+                </div>
+                <div
+                  className="mono-label text-[#3A5468] mb-3"
+                  style={{ fontFamily: "var(--font-space-mono)" }}
+                >
+                  {g.constraint}
+                </div>
+                <p
+                  className="text-[#88A7C1] text-xs leading-relaxed"
+                  style={{ fontFamily: "var(--font-space-grotesk)" }}
+                >
+                  {g.body}
+                </p>
+              </div>
+
+              {/* SQL */}
+              <div className="lg:col-span-6 lg:border-l lg:border-[#253745] lg:pl-6">
+                <div
+                  className="mono-label text-[#3A5468] mb-3"
+                  style={{ fontFamily: "var(--font-space-mono)" }}
+                >
+                  SQL / PYTHON REFERENCE
+                </div>
+                <pre
+                  className="bg-[#06141B] border border-[#253745] p-4 text-[11px] text-[#88A7C1] overflow-x-auto group-hover:border-[#3A5468] transition-colors duration-300"
+                  style={{ fontFamily: "var(--font-space-mono)" }}
+                >
+                  {g.sql}
+                </pre>
+              </div>
+            </div>
+          ))}
         </div>
 
-        {/* Tab Selection */}
-        <div className="flex flex-wrap items-center justify-center gap-2.5 mb-10">
-          <button
-            onClick={() => setActiveTab("monorepo")}
-            className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer flex items-center gap-2 ${
-              activeTab === "monorepo"
-                ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 shadow-lg shadow-emerald-500/10"
-                : "bg-zinc-900/60 text-zinc-400 hover:text-white border border-zinc-800"
-            }`}
+        {/* ── Architecture Layers ── */}
+        <div className="arch-layers-container py-12 border-b border-[#253745]">
+          <div
+            className="mono-label text-[#5A7896] mb-8"
+            style={{ fontFamily: "var(--font-space-mono)" }}
           >
-            <Layers className="w-4 h-4" />
-            <span>Monorepo Structure</span>
-          </button>
-          <button
-            onClick={() => setActiveTab("erd")}
-            className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer flex items-center gap-2 ${
-              activeTab === "erd"
-                ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 shadow-lg shadow-emerald-500/10"
-                : "bg-zinc-900/60 text-zinc-400 hover:text-white border border-zinc-800"
-            }`}
-          >
-            <Database className="w-4 h-4" />
-            <span>Data Model & ERD</span>
-          </button>
-          <button
-            onClick={() => setActiveTab("auth")}
-            className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer flex items-center gap-2 ${
-              activeTab === "auth"
-                ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 shadow-lg shadow-emerald-500/10"
-                : "bg-zinc-900/60 text-zinc-400 hover:text-white border border-zinc-800"
-            }`}
-          >
-            <ShieldCheck className="w-4 h-4" />
-            <span>Same-Origin /api & Auth</span>
-          </button>
-          <button
-            onClick={() => setActiveTab("benchmark")}
-            className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer flex items-center gap-2 ${
-              activeTab === "benchmark"
-                ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 shadow-lg shadow-emerald-500/10"
-                : "bg-zinc-900/60 text-zinc-400 hover:text-white border border-zinc-800"
-            }`}
-          >
-            <Terminal className="w-4 h-4" />
-            <span>Seed Dataset & Benchmarks</span>
-          </button>
-        </div>
-
-        {/* Content Box */}
-        <div className="glass-card rounded-2xl p-6 md:p-8 border border-zinc-800/80">
-          {activeTab === "monorepo" && (
-            <div className="space-y-6">
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                <div>
-                  <h3 className="text-xl font-bold text-white">Single Monorepo: Clean Code Boundaries</h3>
-                  <p className="text-xs text-zinc-400 mt-1">
-                    Strict two-member ownership: M1 (Backend/DB) & M2 (Frontend/UX)
-                  </p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-[11px] font-mono text-zinc-400 bg-zinc-900 px-3 py-1 rounded-full border border-zinc-800">
-                    CODEOWNERS Protected
-                  </span>
-                </div>
-              </div>
-
-              <div className="grid md:grid-cols-2 gap-6">
-                <div className="p-4 rounded-xl bg-black/80 border border-zinc-800 font-mono text-xs text-zinc-300 space-y-1 overflow-x-auto">
-                  <div className="text-zinc-500"># Monorepo Topology</div>
-                  <div>planledger/</div>
-                  <div className="text-emerald-400 pl-4">├── apps/</div>
-                  <div className="text-cyan-400 pl-8">├── api/ (Django 6 + DRF)</div>
-                  <div className="text-zinc-400 pl-12">├── accounts, catalog, subscriptions</div>
-                  <div className="text-zinc-400 pl-12">└── billing, payments, analytics</div>
-                  <div className="text-emerald-400 pl-8">└── web/ (Next.js 16 App Router)</div>
-                  <div className="text-zinc-400 pl-12">├── app, components, lib, services</div>
-                  <div className="text-amber-400 pl-4">├── docs/</div>
-                  <div className="text-zinc-400 pl-8">├── TEAM_PLAN.md, ARCHITECTURE.md</div>
-                  <div className="text-zinc-400 pl-8">└── DATA_MODEL.md, BILLING_RULES.md</div>
-                  <div className="text-emerald-400 pl-4">└── infrastructure/</div>
-                  <div className="text-zinc-400 pl-8">├── docker-compose.yml (Postgres 17)</div>
-                  <div className="text-zinc-400 pl-8">└── render.yaml (Gunicorn + Neon)</div>
-                </div>
-
-                <div className="space-y-4 text-xs text-zinc-300">
-                  <div className="p-4 rounded-xl bg-zinc-900/50 border border-zinc-800 space-y-2">
-                    <div className="font-bold text-white flex items-center gap-1.5">
-                      <span className="w-2 h-2 rounded-full bg-emerald-400" />
-                      <span>Zero Dependency Bloat</span>
-                    </div>
-                    <p className="text-zinc-400 leading-relaxed">
-                      No BaaS, no external auth intermediaries, and no unnecessary LLM dependencies. Local Docker Compose spins up real Postgres 17 in 3 seconds.
-                    </p>
-                  </div>
-
-                  <div className="p-4 rounded-xl bg-zinc-900/50 border border-zinc-800 space-y-2">
-                    <div className="font-bold text-white flex items-center gap-1.5">
-                      <span className="w-2 h-2 rounded-full bg-cyan-400" />
-                      <span>Contract Synchronization</span>
-                    </div>
-                    <p className="text-zinc-400 leading-relaxed">
-                      OpenAPI schema generated at <code className="text-cyan-400">/api/schema/</code>. TypeScript types automatically consumed by Next.js to eliminate type drift.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {activeTab === "erd" && (
-            <div className="space-y-6">
-              <div>
-                <h3 className="text-xl font-bold text-white">Relational Data Model & PROTECT Cascades</h3>
-                <p className="text-xs text-zinc-400 mt-1">
-                  Financial entities preserve historical integrity even if customer or catalog objects change.
+            SYSTEM LAYER ARCHITECTURE
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 divide-y md:divide-y-0 md:divide-x divide-[#253745] border border-[#253745]">
+            {ARCH_LAYERS.map((l, i) => (
+              <div key={i} className="arch-layer opacity-0 p-6 flex flex-col gap-3">
+                <span
+                  className="mono-label text-[#5A7896]"
+                  style={{ fontFamily: "var(--font-space-mono)" }}
+                >
+                  L{i + 1} — {l.layer}
+                </span>
+                <span
+                  className="text-sm font-bold text-[#ADC2D5]"
+                  style={{ fontFamily: "var(--font-space-grotesk)" }}
+                >
+                  {l.tech}
+                </span>
+                <p
+                  className="text-[11px] text-[#5A7896] leading-relaxed"
+                  style={{ fontFamily: "var(--font-space-mono)" }}
+                >
+                  {l.detail}
                 </p>
               </div>
-
-              <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 text-xs">
-                <div className="p-4 rounded-xl bg-zinc-900/70 border border-zinc-800 space-y-2">
-                  <div className="font-bold text-emerald-400 font-mono">accounts_user</div>
-                  <p className="text-[11px] text-zinc-400 leading-relaxed">
-                    Email, Argon2 hash, role (Admin/Staff/Customer). Case-insensitive lower index.
-                  </p>
-                </div>
-                <div className="p-4 rounded-xl bg-zinc-900/70 border border-zinc-800 space-y-2">
-                  <div className="font-bold text-cyan-400 font-mono">catalog_plan</div>
-                  <p className="text-[11px] text-zinc-400 leading-relaxed">
-                    Pricing, period, interval_count, auto_close, pausable, and renewable lifecycle flags.
-                  </p>
-                </div>
-                <div className="p-4 rounded-xl bg-zinc-900/70 border border-zinc-800 space-y-2">
-                  <div className="font-bold text-amber-400 font-mono">billing_invoice</div>
-                  <p className="text-[11px] text-zinc-400 leading-relaxed">
-                    Locked sequence (INV/2026/00001), subtotal, tax snapshot, discount redemption, total, amount_paid.
-                  </p>
-                </div>
-                <div className="p-4 rounded-xl bg-zinc-900/70 border border-zinc-800 space-y-2">
-                  <div className="font-bold text-purple-400 font-mono">core_auditlog</div>
-                  <p className="text-[11px] text-zinc-400 leading-relaxed">
-                    Actor, action, entity, entity_id, JSONB change delta for audit trail and compliance.
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {activeTab === "auth" && (
-            <div className="space-y-6">
-              <div>
-                <h3 className="text-xl font-bold text-white">Same-Origin /api Rewrite & Cookie Security</h3>
-                <p className="text-xs text-zinc-400 mt-1">
-                  Zero localStorage token storage. Protected against XSS with HttpOnly cookies.
-                </p>
-              </div>
-
-              <div className="p-4 rounded-xl bg-black/80 border border-zinc-800 font-mono text-xs text-zinc-300 space-y-2">
-                <div className="text-zinc-500">// Next.js next.config.ts rewrite configuration</div>
-                <div className="text-emerald-400">
-                  {`rewrites() {`}
-                </div>
-                <div className="text-zinc-200 pl-4">
-                  {`return [{ source: "/api/:path*", destination: "\${DJANGO_API_URL}/api/:path*" }];`}
-                </div>
-                <div className="text-emerald-400">
-                  {`}`}
-                </div>
-              </div>
-
-              <div className="grid sm:grid-cols-3 gap-4 text-xs text-zinc-300">
-                <div className="p-3.5 rounded-xl bg-zinc-900/60 border border-zinc-800">
-                  <div className="font-bold text-emerald-400 mb-1">Argon2 Password Hashing</div>
-                  <p className="text-[11px] text-zinc-400">Memory-hard password derivation function.</p>
-                </div>
-                <div className="p-3.5 rounded-xl bg-zinc-900/60 border border-zinc-800">
-                  <div className="font-bold text-cyan-400 mb-1">CSRF Cookie Validation</div>
-                  <p className="text-[11px] text-zinc-400">Enforced on all state-mutating requests.</p>
-                </div>
-                <div className="p-3.5 rounded-xl bg-zinc-900/60 border border-zinc-800">
-                  <div className="font-bold text-amber-400 mb-1">HttpOnly Session Cookies</div>
-                  <p className="text-[11px] text-zinc-400">Prevents client-side script token theft.</p>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {activeTab === "benchmark" && (
-            <div className="space-y-6">
-              <div>
-                <h3 className="text-xl font-bold text-white">Seed Dataset & Benchmark Verification</h3>
-                <p className="text-xs text-zinc-400 mt-1">
-                  Tested on 5,000 subscriptions and 20,000 invoices with <code className="text-emerald-400 font-mono">select_related</code> and index optimization.
-                </p>
-              </div>
-
-              <div className="grid sm:grid-cols-3 gap-4 font-mono text-xs">
-                <div className="p-4 rounded-xl bg-zinc-900 border border-zinc-800 space-y-1">
-                  <div className="text-zinc-500 text-[10px]">Endpoint</div>
-                  <div className="text-white font-bold">GET /api/subscriptions/</div>
-                  <div className="text-emerald-400 font-bold text-lg pt-1">182 ms</div>
-                  <div className="text-[10px] text-zinc-400">Page 1 of 5,000 rows</div>
-                </div>
-
-                <div className="p-4 rounded-xl bg-zinc-900 border border-zinc-800 space-y-1">
-                  <div className="text-zinc-500 text-[10px]">Endpoint</div>
-                  <div className="text-white font-bold">GET /api/invoices/</div>
-                  <div className="text-cyan-400 font-bold text-lg pt-1">214 ms</div>
-                  <div className="text-[10px] text-zinc-400">Page 1 of 20,000 rows</div>
-                </div>
-
-                <div className="p-4 rounded-xl bg-zinc-900 border border-zinc-800 space-y-1">
-                  <div className="text-zinc-500 text-[10px]">Endpoint</div>
-                  <div className="text-white font-bold">GET /api/analytics/overview/</div>
-                  <div className="text-amber-400 font-bold text-lg pt-1">345 ms</div>
-                  <div className="text-[10px] text-zinc-400">Database SQL Aggregation</div>
-                </div>
-              </div>
-            </div>
-          )}
+            ))}
+          </div>
         </div>
       </div>
     </section>

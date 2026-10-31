@@ -1,7 +1,6 @@
 "use client";
 
 import React from "react";
-import { TrendingUp, PieChart as PieIcon, BarChart3 } from "lucide-react";
 import { DashboardShell } from "@/components/layout/dashboard-shell";
 import { MOCK_KPIS, MOCK_REVENUE_TRENDS, MOCK_PLAN_DISTRIBUTION } from "@/services/mock-data";
 import { formatINR } from "@/lib/utils";

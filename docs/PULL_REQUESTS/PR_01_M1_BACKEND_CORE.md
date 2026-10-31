@@ -47,6 +47,22 @@ Key capabilities included in this PR:
    - Fast and high-scale seed data generator (`infrastructure/scripts/seed_data.py`).
    - OpenAPI 3.0 schema generation (`drf-spectacular`) with 0 errors.
 
+10. **Product Catalog, Variant Surcharges & Quotations (`catalog` app)**:
+    - Products (name, type, sales_price, cost_price, notes) and ProductVariants.
+    - Attributes and AttributeValues with surcharges (e.g. Brand=Odoo +560.00) automatically added to variant prices.
+    - QuotationTemplate and line items with validity dates and payment terms.
+    - Endpoints: `POST /api/v1/catalog/quotations/create_from_template/` and `POST /api/v1/catalog/quotations/{id}/confirm_subscription/`.
+11. **Plan Lifecycle Rules & Subscription Events**:
+    - Plan fields: `interval_count`, `min_qty`, `start_date`, `end_date`, `auto_close`, `closable`, `pausable`, `renewable`.
+    - Strict service enforcement on pause, close, renew, and start/end dates.
+    - `SubscriptionLine` items snapshotting product, variant, quantity, unit price, and taxes.
+    - `SubscriptionEvent` audit trail tracking status transitions and actors.
+12. **Per-Line Tax Snapshots**:
+    - Flexible tax model supporting percentage (e.g. 18% GST) and fixed cess with `ROUND_HALF_UP` precision per line.
+    - `InvoiceLineTax` snapshot model preserving immutable tax history per invoice line item.
+13. **Strict Role-Based Permissions**:
+    - `IsAdminOrStaffReadOnly` enforcing Admin-only writes (POST/PUT/PATCH/DELETE) and Staff read-only (GET) across catalog, taxes, and discounts.
+
 ---
 
 ### Related Issue / Task
@@ -56,6 +72,7 @@ Key capabilities included in this PR:
 
 ### Type of Change
 - [x] `feat(api)`: Backend feature
+- [x] `feat(catalog)`: Product catalog & quotations
 - [x] `feat(infra)`: CI/CD pipeline and deployment infrastructure
 - [x] `docs`: API contracts and documentation
 
@@ -64,7 +81,7 @@ Key capabilities included in this PR:
 ### Subsystem Ownership Check
 - [x] **M1 (Reshma Shaik)**: Changes in `apps/api/**` and `infrastructure/**`
 - [ ] **M2 (Gayathri Devi G)**: Changes in `apps/web/**`
-- [x] **Shared**: Changes in `docs/API_CONTRACT.md`
+- [x] **Shared**: Changes in `docs/API_CONTRACT.md` and `docs/DATABASE_SCHEMA.md`
 
 ---
 
@@ -72,17 +89,18 @@ Key capabilities included in this PR:
 
 1. **Automated Unit Tests**:
    - Executed via `.venv\Scripts\python.exe apps/api/manage.py test tests`
-   - **40 tests executed — 40 passed (0 failures, 0 errors) in 16.98s**.
+   - **48 tests executed — 48 passed (0 failures, 0 errors) in 25.27s**.
    - Coverage:
-     - `test_auth.py`: Registration, login, logout, session persistence, CSRF.
-     - `test_customer_isolation.py`: Tenant isolation and HTTP 404 enumeration prevention.
-     - `test_subscription_lifecycle.py`: State machine transitions, pause/resume, upgrades.
-     - `test_billing_engine.py`: Billing cycle renewal and idempotency guarantees.
-     - `test_invoices.py`: Sequential numbering, 18% GST calculation, voiding, receipt HTML/JSON.
-     - `test_payments.py`: Overpayment rejection, balance updates, staff refund processing.
-     - `test_discounts.py`: Promo validity dates, usage limits, minimum amounts.
-     - `test_pagination_and_performance.py`: Standard pagination contract.
-     - `test_health.py`: Liveness probe and DB connectivity verification.
+     - `test_catalog.py` (8 tests): Product variant pricing (+560 Odoo surcharge), percentage & fixed taxes, quotation template instantiation, quotation-to-subscription conversion, admin-write vs staff-read permissions, plan lifecycle constraints (pausable, closable, date limits), billing auto_close/renewable rules, and per-line `InvoiceLineTax` snapshots.
+     - `test_auth.py` (5 tests): Registration, login, logout, session persistence, CSRF.
+     - `test_customer_isolation.py` (4 tests): Tenant isolation and HTTP 404 enumeration prevention.
+     - `test_subscription_lifecycle.py` (6 tests): State machine transitions, pause/resume, upgrades.
+     - `test_billing_engine.py` (5 tests): Billing cycle renewal and idempotency guarantees.
+     - `test_invoices.py` (5 tests): Sequential numbering, 18% GST calculation, voiding, receipt HTML/JSON.
+     - `test_payments.py` (7 tests): Overpayment rejection, balance updates, staff refund processing.
+     - `test_discounts.py` (5 tests): Promo validity dates, usage limits, minimum amounts.
+     - `test_pagination_and_performance.py` (3 tests): Standard pagination contract.
+     - `test_health.py` (2 tests): Liveness probe and DB connectivity verification.
 
 2. **OpenAPI Schema Verification**:
    - Generated using `python apps/api/manage.py spectacular --file apps/api/schema.yml`

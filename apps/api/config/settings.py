@@ -105,7 +105,7 @@ if DATABASE_URL:
             "HOST": url.hostname,
             "PORT": url.port or 5432,
             "OPTIONS": {
-                "sslmode": "require" if "neon.tech" in url.hostname else "prefer",
+                "sslmode": "require" if "neon.tech" in (url.hostname or "") else "prefer",
             },
             "CONN_MAX_AGE": 600,
         }

@@ -34,20 +34,3 @@ services:
         sync: false
       - key: DEFAULT_FROM_EMAIL
         value: "notifications@brightloop.io"
-
-  - type: cron
-    name: planledger-daily-billing
-    runtime: python
-    rootDir: apps/api
-    schedule: "0 0 * * *" # Daily at midnight UTC
-    buildCommand: pip install -r requirements.txt
-    startCommand: python manage.py run_billing
-    envVars:
-      - fromService:
-          type: web
-          name: planledger-api
-          envVarKey: DATABASE_URL
-      - fromService:
-          type: web
-          name: planledger-api
-          envVarKey: SECRET_KEY

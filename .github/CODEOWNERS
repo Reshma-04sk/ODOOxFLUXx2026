@@ -1,0 +1,31 @@
+# CODEOWNERS for PlanLedger Monorepo
+# Team Lead / Backend & Infrastructure Owner: Reshma Shaik (@Reshma-04sk)
+# Frontend Lead: Gayathri Devi G (@gaayathri-devi-07)
+
+# Global default: shared review required
+* @Reshma-04sk @gaayathri-devi-07
+
+# Backend & Infrastructure (M1 - Reshma Shaik)
+/apps/api/ @Reshma-04sk
+/infrastructure/ @Reshma-04sk
+/docker-compose.yml @Reshma-04sk
+/docs/DATABASE_SCHEMA.md @Reshma-04sk
+/docs/DEPLOYMENT.md @Reshma-04sk
+/docs/START_M1.md @Reshma-04sk
+
+# Frontend & Design System (M2 - Gayathri Devi G)
+/apps/web/ @gaayathri-devi-07
+/docs/START_M2.md @gaayathri-devi-07
+
+# Shared Architecture, Documentation & Integration
+/docs/ARCHITECTURE.md @Reshma-04sk @gaayathri-devi-07
+/docs/API_CONTRACT.md @Reshma-04sk @gaayathri-devi-07
+/docs/TEAM_ROLES.md @Reshma-04sk @gaayathri-devi-07
+/docs/CONTRIBUTION_GUIDE.md @Reshma-04sk @gaayathri-devi-07
+/docs/DEVELOPMENT_SETUP.md @Reshma-04sk @gaayathri-devi-07
+/docs/TESTING.md @Reshma-04sk @gaayathri-devi-07
+/docs/DEMO_GUIDE.md @Reshma-04sk @gaayathri-devi-07
+/docs/TASK_BOARD.md @Reshma-04sk @gaayathri-devi-07
+/docs/START_HERE.md @Reshma-04sk @gaayathri-devi-07
+/README.md @Reshma-04sk @gaayathri-devi-07
+/.github/workflows/ @Reshma-04sk @gaayathri-devi-07

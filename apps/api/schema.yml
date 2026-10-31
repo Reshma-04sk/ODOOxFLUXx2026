@@ -1,0 +1,3464 @@
+openapi: 3.0.3
+info:
+  title: PlanLedger API
+  version: 1.0.0
+  description: Brightloop Software Subscription Management & Billing Engine API
+paths:
+  /api/v1/accounts/csrf/:
+    get:
+      operationId: accounts_csrf_retrieve
+      description: Returns CSRF cookie and token. Useful for SPAs to initialize session
+        and double-submit cookie protection.
+      tags:
+      - accounts
+      security:
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CSRFResponse'
+          description: ''
+  /api/v1/accounts/login/:
+    post:
+      operationId: accounts_login_create
+      description: Session-based login with email and password.
+      tags:
+      - accounts
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+  /api/v1/accounts/logout/:
+    post:
+      operationId: accounts_logout_create
+      description: Logs out the authenticated user and flushes their session.
+      tags:
+      - accounts
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LogoutResponse'
+          description: ''
+  /api/v1/accounts/me/:
+    get:
+      operationId: accounts_me_retrieve
+      description: Retrieves the currently authenticated user's profile and tenant
+        customer information.
+      tags:
+      - accounts
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+  /api/v1/accounts/register/:
+    post:
+      operationId: accounts_register_create
+      description: Registers a new customer account, provisions tenant customer record,
+        and returns user data.
+      tags:
+      - accounts
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRegistrationRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/UserRegistrationRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/UserRegistrationRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+  /api/v1/analytics/distribution/:
+    get:
+      operationId: analytics_distribution_list
+      description: Active subscriber distribution by plan tier.
+      tags:
+      - analytics
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PlanDistributionItem'
+          description: ''
+  /api/v1/analytics/overview/:
+    get:
+      operationId: analytics_overview_retrieve
+      description: 'Overview KPIs: MRR, ARR, Active Subscribers, Churn Rate, Outstanding
+        balance.'
+      tags:
+      - analytics
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnalyticsOverview'
+          description: ''
+  /api/v1/analytics/trends/:
+    get:
+      operationId: analytics_trends_list
+      description: Historical monthly trends of invoiced vs collected revenue.
+      tags:
+      - analytics
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RevenueTrendItem'
+          description: ''
+  /api/v1/billing/records/:
+    get:
+      operationId: billing_records_list
+      description: Billing execution history records (Staff only).
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - billing
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedBillingExecutionRecordList'
+          description: ''
+  /api/v1/billing/records/{id}/:
+    get:
+      operationId: billing_records_retrieve
+      description: Billing execution history records (Staff only).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Billing Execution Record.
+        required: true
+      tags:
+      - billing
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BillingExecutionRecord'
+          description: ''
+  /api/v1/billing/trigger/:
+    post:
+      operationId: billing_trigger_create
+      description: Manual billing execution trigger endpoint for live demos or ad-hoc
+        runs (Staff only).
+      tags:
+      - billing
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TriggerBillingRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TriggerBillingRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TriggerBillingRequest'
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BillingExecutionRecord'
+          description: ''
+  /api/v1/customers/:
+    get:
+      operationId: customers_list
+      description: CRUD API for Customer entities with strict tenant isolation.
+      parameters:
+      - in: query
+        name: country
+        schema:
+          type: string
+      - in: query
+        name: currency
+        schema:
+          type: string
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: state
+        schema:
+          type: string
+      - in: query
+        name: status
+        schema:
+          type: string
+          enum:
+          - active
+          - churned
+          - suspended
+        description: |-
+          * `active` - Active
+          * `suspended` - Suspended
+          * `churned` - Churned
+      tags:
+      - customers
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedCustomerList'
+          description: ''
+    post:
+      operationId: customers_create
+      description: CRUD API for Customer entities with strict tenant isolation.
+      tags:
+      - customers
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CustomerRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CustomerRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CustomerRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Customer'
+          description: ''
+  /api/v1/customers/{id}/:
+    get:
+      operationId: customers_retrieve
+      description: CRUD API for Customer entities with strict tenant isolation.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Customer.
+        required: true
+      tags:
+      - customers
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerDetail'
+          description: ''
+    put:
+      operationId: customers_update
+      description: CRUD API for Customer entities with strict tenant isolation.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Customer.
+        required: true
+      tags:
+      - customers
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CustomerRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CustomerRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CustomerRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Customer'
+          description: ''
+    patch:
+      operationId: customers_partial_update
+      description: CRUD API for Customer entities with strict tenant isolation.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Customer.
+        required: true
+      tags:
+      - customers
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedCustomerRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedCustomerRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedCustomerRequest'
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Customer'
+          description: ''
+    delete:
+      operationId: customers_destroy
+      description: CRUD API for Customer entities with strict tenant isolation.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Customer.
+        required: true
+      tags:
+      - customers
+      security:
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/discounts/:
+    get:
+      operationId: discounts_list
+      description: Discount codes and promotional coupons management.
+      parameters:
+      - in: query
+        name: discount_type
+        schema:
+          type: string
+          enum:
+          - fixed_amount
+          - percentage
+        description: |-
+          * `percentage` - Percentage (%)
+          * `fixed_amount` - Fixed Amount (INR)
+      - in: query
+        name: is_active
+        schema:
+          type: boolean
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - discounts
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedDiscountList'
+          description: ''
+    post:
+      operationId: discounts_create
+      description: Discount codes and promotional coupons management.
+      tags:
+      - discounts
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DiscountRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/DiscountRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/DiscountRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Discount'
+          description: ''
+  /api/v1/discounts/{id}/:
+    get:
+      operationId: discounts_retrieve
+      description: Discount codes and promotional coupons management.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Discount.
+        required: true
+      tags:
+      - discounts
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Discount'
+          description: ''
+    put:
+      operationId: discounts_update
+      description: Discount codes and promotional coupons management.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Discount.
+        required: true
+      tags:
+      - discounts
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DiscountRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/DiscountRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/DiscountRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Discount'
+          description: ''
+    patch:
+      operationId: discounts_partial_update
+      description: Discount codes and promotional coupons management.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Discount.
+        required: true
+      tags:
+      - discounts
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedDiscountRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedDiscountRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedDiscountRequest'
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Discount'
+          description: ''
+    delete:
+      operationId: discounts_destroy
+      description: Discount codes and promotional coupons management.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Discount.
+        required: true
+      tags:
+      - discounts
+      security:
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/discounts/validate/:
+    post:
+      operationId: discounts_validate_create
+      description: Validates a discount coupon code against a subtotal and customer
+        account.
+      tags:
+      - discounts
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ValidateDiscountRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ValidateDiscountRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ValidateDiscountRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DiscountValidationResponse'
+          description: ''
+  /api/v1/invoices/:
+    get:
+      operationId: invoices_list
+      description: |-
+        Invoice management API.
+        Provides invoice listing, detail with line items, manual creation, and voiding.
+      parameters:
+      - in: query
+        name: currency
+        schema:
+          type: string
+      - in: query
+        name: customer
+        schema:
+          type: integer
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: status
+        schema:
+          type: string
+          enum:
+          - draft
+          - open
+          - paid
+          - uncollectible
+          - void
+        description: |-
+          * `draft` - Draft
+          * `open` - Open
+          * `paid` - Paid
+          * `void` - Void
+          * `uncollectible` - Uncollectible
+      - in: query
+        name: subscription
+        schema:
+          type: integer
+      tags:
+      - invoices
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedInvoiceList'
+          description: ''
+    post:
+      operationId: invoices_create
+      description: |-
+        Invoice management API.
+        Provides invoice listing, detail with line items, manual creation, and voiding.
+      tags:
+      - invoices
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InvoiceDetailRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/InvoiceDetailRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/InvoiceDetailRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvoiceDetail'
+          description: ''
+  /api/v1/invoices/{id}/:
+    get:
+      operationId: invoices_retrieve
+      description: |-
+        Invoice management API.
+        Provides invoice listing, detail with line items, manual creation, and voiding.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Invoice.
+        required: true
+      tags:
+      - invoices
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvoiceDetail'
+          description: ''
+    put:
+      operationId: invoices_update
+      description: |-
+        Invoice management API.
+        Provides invoice listing, detail with line items, manual creation, and voiding.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Invoice.
+        required: true
+      tags:
+      - invoices
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InvoiceRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/InvoiceRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/InvoiceRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Invoice'
+          description: ''
+    patch:
+      operationId: invoices_partial_update
+      description: |-
+        Invoice management API.
+        Provides invoice listing, detail with line items, manual creation, and voiding.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Invoice.
+        required: true
+      tags:
+      - invoices
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedInvoiceRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedInvoiceRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedInvoiceRequest'
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Invoice'
+          description: ''
+    delete:
+      operationId: invoices_destroy
+      description: |-
+        Invoice management API.
+        Provides invoice listing, detail with line items, manual creation, and voiding.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Invoice.
+        required: true
+      tags:
+      - invoices
+      security:
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/invoices/{id}/void/:
+    post:
+      operationId: invoices_void_create
+      description: |-
+        Invoice management API.
+        Provides invoice listing, detail with line items, manual creation, and voiding.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Invoice.
+        required: true
+      tags:
+      - invoices
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvoiceDetail'
+          description: ''
+  /api/v1/notifications/:
+    get:
+      operationId: notifications_list
+      description: List and retrieve system notifications and email dispatch logs.
+      parameters:
+      - in: query
+        name: customer
+        schema:
+          type: integer
+      - in: query
+        name: notification_type
+        schema:
+          type: string
+          enum:
+          - billing_failed
+          - general
+          - invoice_created
+          - payment_received
+          - subscription_canceled
+        description: |-
+          * `invoice_created` - Invoice Created
+          * `payment_received` - Payment Received
+          * `subscription_canceled` - Subscription Canceled
+          * `billing_failed` - Billing Failed
+          * `general` - General Notification
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: status
+        schema:
+          type: string
+          enum:
+          - failed
+          - pending
+          - sent
+        description: |-
+          * `pending` - Pending
+          * `sent` - Sent
+          * `failed` - Failed
+      tags:
+      - notifications
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedNotificationList'
+          description: ''
+  /api/v1/notifications/{id}/:
+    get:
+      operationId: notifications_retrieve
+      description: List and retrieve system notifications and email dispatch logs.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Notification.
+        required: true
+      tags:
+      - notifications
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Notification'
+          description: ''
+  /api/v1/payments/:
+    get:
+      operationId: payments_list
+      description: Payment recording and transaction tracking API.
+      parameters:
+      - in: query
+        name: customer
+        schema:
+          type: integer
+      - in: query
+        name: invoice
+        schema:
+          type: integer
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: payment_method
+        schema:
+          type: string
+          enum:
+          - bank_transfer
+          - card
+          - netbanking
+          - upi
+        description: |-
+          * `upi` - Unified Payments Interface (UPI)
+          * `card` - Credit / Debit Card
+          * `netbanking` - Net Banking
+          * `bank_transfer` - NEFT / RTGS Bank Transfer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: status
+        schema:
+          type: string
+          enum:
+          - failed
+          - pending
+          - refunded
+          - succeeded
+        description: |-
+          * `pending` - Pending
+          * `succeeded` - Succeeded
+          * `failed` - Failed
+          * `refunded` - Refunded
+      tags:
+      - payments
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedPaymentList'
+          description: ''
+    post:
+      operationId: payments_create
+      description: Payment recording and transaction tracking API.
+      tags:
+      - payments
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaymentRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PaymentRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PaymentRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Payment'
+          description: ''
+  /api/v1/payments/{id}/:
+    get:
+      operationId: payments_retrieve
+      description: Payment recording and transaction tracking API.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Payment.
+        required: true
+      tags:
+      - payments
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Payment'
+          description: ''
+    put:
+      operationId: payments_update
+      description: Payment recording and transaction tracking API.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Payment.
+        required: true
+      tags:
+      - payments
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaymentRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PaymentRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PaymentRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Payment'
+          description: ''
+    patch:
+      operationId: payments_partial_update
+      description: Payment recording and transaction tracking API.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Payment.
+        required: true
+      tags:
+      - payments
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedPaymentRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedPaymentRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedPaymentRequest'
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Payment'
+          description: ''
+    delete:
+      operationId: payments_destroy
+      description: Payment recording and transaction tracking API.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Payment.
+        required: true
+      tags:
+      - payments
+      security:
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/plans/:
+    get:
+      operationId: plans_list
+      description: |-
+        Plan management API.
+        Publicly listable and retrievable. Modifications restricted to Staff/Admin.
+      parameters:
+      - in: query
+        name: billing_frequency
+        schema:
+          type: string
+          enum:
+          - monthly
+          - yearly
+        description: |-
+          * `monthly` - Monthly
+          * `yearly` - Yearly
+      - in: query
+        name: is_active
+        schema:
+          type: boolean
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: tier
+        schema:
+          type: string
+          enum:
+          - enterprise
+          - growth
+          - starter
+        description: |-
+          * `starter` - Starter
+          * `growth` - Growth
+          * `enterprise` - Enterprise
+      tags:
+      - plans
+      security:
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedPlanList'
+          description: ''
+    post:
+      operationId: plans_create
+      description: |-
+        Plan management API.
+        Publicly listable and retrievable. Modifications restricted to Staff/Admin.
+      tags:
+      - plans
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PlanRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PlanRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PlanRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Plan'
+          description: ''
+  /api/v1/plans/{id}/:
+    get:
+      operationId: plans_retrieve
+      description: |-
+        Plan management API.
+        Publicly listable and retrievable. Modifications restricted to Staff/Admin.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Plan.
+        required: true
+      tags:
+      - plans
+      security:
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Plan'
+          description: ''
+    put:
+      operationId: plans_update
+      description: |-
+        Plan management API.
+        Publicly listable and retrievable. Modifications restricted to Staff/Admin.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Plan.
+        required: true
+      tags:
+      - plans
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PlanRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PlanRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PlanRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Plan'
+          description: ''
+    patch:
+      operationId: plans_partial_update
+      description: |-
+        Plan management API.
+        Publicly listable and retrievable. Modifications restricted to Staff/Admin.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Plan.
+        required: true
+      tags:
+      - plans
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedPlanRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedPlanRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedPlanRequest'
+      security:
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Plan'
+          description: ''
+    delete:
+      operationId: plans_destroy
+      description: |-
+        Plan management API.
+        Publicly listable and retrievable. Modifications restricted to Staff/Admin.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Plan.
+        required: true
+      tags:
+      - plans
+      security:
+      - cookieAuth: []
+      - {}
+      responses:
+        '204':
+          description: No response body
+  /api/v1/subscriptions/:
+    get:
+      operationId: subscriptions_list
+      description: |-
+        Subscription lifecycle management API.
+        Provides endpoints for creating, retrieving, canceling, pausing, resuming, and upgrading subscriptions.
+      parameters:
+      - in: query
+        name: customer
+        schema:
+          type: integer
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: plan__billing_frequency
+        schema:
+          type: string
+          enum:
+          - monthly
+          - yearly
+        description: |-
+          * `monthly` - Monthly
+          * `yearly` - Yearly
+      - in: query
+        name: plan__tier
+        schema:
+          type: string
+          enum:
+          - enterprise
+          - growth
+          - starter
+        description: |-
+          * `starter` - Starter
+          * `growth` - Growth
+          * `enterprise` - Enterprise
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: status
+        schema:
+          type: string
+          enum:
+          - active
+          - canceled
+          - past_due
+          - paused
+          - trialing
+        description: |-
+          * `trialing` - Trialing
+          * `active` - Active
+          * `past_due` - Past Due
+          * `canceled` - Canceled
+          * `paused` - Paused
+      tags:
+      - subscriptions
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedSubscriptionList'
+          description: ''
+    post:
+      operationId: subscriptions_create
+      description: |-
+        Subscription lifecycle management API.
+        Provides endpoints for creating, retrieving, canceling, pausing, resuming, and upgrading subscriptions.
+      tags:
+      - subscriptions
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SubscriptionRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SubscriptionRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SubscriptionRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Subscription'
+          description: ''
+  /api/v1/subscriptions/{id}/:
+    get:
+      operationId: subscriptions_retrieve
+      description: |-
+        Subscription lifecycle management API.
+        Provides endpoints for creating, retrieving, canceling, pausing, resuming, and upgrading subscriptions.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Subscription.
+        required: true
+      tags:
+      - subscriptions
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Subscription'
+          description: ''
+    put:
+      operationId: subscriptions_update
+      description: |-
+        Subscription lifecycle management API.
+        Provides endpoints for creating, retrieving, canceling, pausing, resuming, and upgrading subscriptions.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Subscription.
+        required: true
+      tags:
+      - subscriptions
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SubscriptionRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SubscriptionRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SubscriptionRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Subscription'
+          description: ''
+    patch:
+      operationId: subscriptions_partial_update
+      description: |-
+        Subscription lifecycle management API.
+        Provides endpoints for creating, retrieving, canceling, pausing, resuming, and upgrading subscriptions.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Subscription.
+        required: true
+      tags:
+      - subscriptions
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedSubscriptionRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedSubscriptionRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedSubscriptionRequest'
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Subscription'
+          description: ''
+    delete:
+      operationId: subscriptions_destroy
+      description: |-
+        Subscription lifecycle management API.
+        Provides endpoints for creating, retrieving, canceling, pausing, resuming, and upgrading subscriptions.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Subscription.
+        required: true
+      tags:
+      - subscriptions
+      security:
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/subscriptions/{id}/cancel/:
+    post:
+      operationId: subscriptions_cancel_create
+      description: |-
+        Subscription lifecycle management API.
+        Provides endpoints for creating, retrieving, canceling, pausing, resuming, and upgrading subscriptions.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Subscription.
+        required: true
+      tags:
+      - subscriptions
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CancelSubscriptionRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CancelSubscriptionRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CancelSubscriptionRequest'
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Subscription'
+          description: ''
+  /api/v1/subscriptions/{id}/change_plan/:
+    post:
+      operationId: subscriptions_change_plan_create
+      description: |-
+        Subscription lifecycle management API.
+        Provides endpoints for creating, retrieving, canceling, pausing, resuming, and upgrading subscriptions.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Subscription.
+        required: true
+      tags:
+      - subscriptions
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChangePlanRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ChangePlanRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ChangePlanRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Subscription'
+          description: ''
+  /api/v1/subscriptions/{id}/pause/:
+    post:
+      operationId: subscriptions_pause_create
+      description: |-
+        Subscription lifecycle management API.
+        Provides endpoints for creating, retrieving, canceling, pausing, resuming, and upgrading subscriptions.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Subscription.
+        required: true
+      tags:
+      - subscriptions
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Subscription'
+          description: ''
+  /api/v1/subscriptions/{id}/resume/:
+    post:
+      operationId: subscriptions_resume_create
+      description: |-
+        Subscription lifecycle management API.
+        Provides endpoints for creating, retrieving, canceling, pausing, resuming, and upgrading subscriptions.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Subscription.
+        required: true
+      tags:
+      - subscriptions
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Subscription'
+          description: ''
+components:
+  schemas:
+    AnalyticsOverview:
+      type: object
+      properties:
+        mrr:
+          type: string
+        arr:
+          type: string
+        active_subscriptions:
+          type: integer
+        trialing_subscriptions:
+          type: integer
+        canceled_subscriptions:
+          type: integer
+        total_subscriptions:
+          type: integer
+        churn_rate:
+          type: number
+          format: double
+        total_revenue:
+          type: string
+        total_outstanding:
+          type: string
+        arpu:
+          type: string
+        currency:
+          type: string
+      required:
+      - active_subscriptions
+      - arpu
+      - arr
+      - canceled_subscriptions
+      - churn_rate
+      - currency
+      - mrr
+      - total_outstanding
+      - total_revenue
+      - total_subscriptions
+      - trialing_subscriptions
+    BillingExecutionRecord:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        executed_at:
+          type: string
+          format: date-time
+          readOnly: true
+        target_date:
+          type: string
+          format: date
+          readOnly: true
+        subscriptions_evaluated:
+          type: integer
+          readOnly: true
+        invoices_generated:
+          type: integer
+          readOnly: true
+        total_amount_invoiced:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,12}(?:\.\d{0,2})?$
+          readOnly: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/BillingExecutionRecordStatusEnum'
+          readOnly: true
+        error_message:
+          type: string
+          readOnly: true
+        duration_ms:
+          type: integer
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - duration_ms
+      - error_message
+      - executed_at
+      - id
+      - invoices_generated
+      - status
+      - subscriptions_evaluated
+      - target_date
+      - total_amount_invoiced
+    BillingExecutionRecordStatusEnum:
+      enum:
+      - running
+      - completed
+      - failed
+      type: string
+      description: |-
+        * `running` - Running
+        * `completed` - Completed
+        * `failed` - Failed
+    BillingFrequencyEnum:
+      enum:
+      - monthly
+      - yearly
+      type: string
+      description: |-
+        * `monthly` - Monthly
+        * `yearly` - Yearly
+    CSRFResponse:
+      type: object
+      properties:
+        csrfToken:
+          type: string
+      required:
+      - csrfToken
+    CancelSubscriptionRequest:
+      type: object
+      properties:
+        immediate:
+          type: boolean
+          default: false
+    ChangePlanRequest:
+      type: object
+      properties:
+        new_plan_id:
+          type: integer
+      required:
+      - new_plan_id
+    Customer:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        company_name:
+          type: string
+          maxLength: 255
+        email:
+          type: string
+          format: email
+          maxLength: 255
+        phone:
+          type: string
+          maxLength: 30
+        billing_address:
+          type: string
+        city:
+          type: string
+          maxLength: 100
+        state:
+          type: string
+          maxLength: 100
+        postal_code:
+          type: string
+          maxLength: 20
+        country:
+          type: string
+          maxLength: 100
+        tax_id:
+          type: string
+          title: GSTIN / Tax ID
+          description: Goods and Services Tax Identification Number for Indian billing.
+          maxLength: 50
+        currency:
+          type: string
+          maxLength: 10
+        status:
+          $ref: '#/components/schemas/Status69aEnum'
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - company_name
+      - created_at
+      - email
+      - id
+      - updated_at
+    CustomerDetail:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        company_name:
+          type: string
+          maxLength: 255
+        email:
+          type: string
+          format: email
+          maxLength: 255
+        phone:
+          type: string
+          maxLength: 30
+        billing_address:
+          type: string
+        city:
+          type: string
+          maxLength: 100
+        state:
+          type: string
+          maxLength: 100
+        postal_code:
+          type: string
+          maxLength: 20
+        country:
+          type: string
+          maxLength: 100
+        tax_id:
+          type: string
+          title: GSTIN / Tax ID
+          description: Goods and Services Tax Identification Number for Indian billing.
+          maxLength: 50
+        currency:
+          type: string
+          maxLength: 10
+        status:
+          $ref: '#/components/schemas/Status69aEnum'
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+        active_subscriptions_count:
+          type: integer
+          readOnly: true
+        total_invoiced:
+          type: string
+          readOnly: true
+        metadata: {}
+      required:
+      - active_subscriptions_count
+      - company_name
+      - created_at
+      - email
+      - id
+      - total_invoiced
+      - updated_at
+    CustomerRequest:
+      type: object
+      properties:
+        company_name:
+          type: string
+          minLength: 1
+          maxLength: 255
+        email:
+          type: string
+          format: email
+          minLength: 1
+          maxLength: 255
+        phone:
+          type: string
+          maxLength: 30
+        billing_address:
+          type: string
+        city:
+          type: string
+          maxLength: 100
+        state:
+          type: string
+          maxLength: 100
+        postal_code:
+          type: string
+          maxLength: 20
+        country:
+          type: string
+          maxLength: 100
+        tax_id:
+          type: string
+          title: GSTIN / Tax ID
+          description: Goods and Services Tax Identification Number for Indian billing.
+          maxLength: 50
+        currency:
+          type: string
+          minLength: 1
+          maxLength: 10
+        status:
+          $ref: '#/components/schemas/Status69aEnum'
+      required:
+      - company_name
+      - email
+    Discount:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        code:
+          type: string
+          maxLength: 50
+        description:
+          type: string
+          maxLength: 255
+        discount_type:
+          $ref: '#/components/schemas/DiscountTypeEnum'
+        value:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          description: Percentage (e.g. 20.00 for 20%) or Flat INR Amount (e.g. 500.00)
+        min_subtotal:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          description: Minimum invoice subtotal required to redeem coupon.
+        max_redemptions:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          nullable: true
+          description: Total allowed redemptions across all customers. Null for unlimited.
+        times_redeemed:
+          type: integer
+          readOnly: true
+        valid_from:
+          type: string
+          format: date-time
+        valid_until:
+          type: string
+          format: date-time
+        is_active:
+          type: boolean
+        is_valid_now:
+          type: boolean
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - code
+      - created_at
+      - id
+      - is_valid_now
+      - times_redeemed
+      - updated_at
+      - valid_until
+      - value
+    DiscountRequest:
+      type: object
+      properties:
+        code:
+          type: string
+          minLength: 1
+          maxLength: 50
+        description:
+          type: string
+          maxLength: 255
+        discount_type:
+          $ref: '#/components/schemas/DiscountTypeEnum'
+        value:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          description: Percentage (e.g. 20.00 for 20%) or Flat INR Amount (e.g. 500.00)
+        min_subtotal:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          description: Minimum invoice subtotal required to redeem coupon.
+        max_redemptions:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          nullable: true
+          description: Total allowed redemptions across all customers. Null for unlimited.
+        valid_from:
+          type: string
+          format: date-time
+        valid_until:
+          type: string
+          format: date-time
+        is_active:
+          type: boolean
+      required:
+      - code
+      - valid_until
+      - value
+    DiscountTypeEnum:
+      enum:
+      - percentage
+      - fixed_amount
+      type: string
+      description: |-
+        * `percentage` - Percentage (%)
+        * `fixed_amount` - Fixed Amount (INR)
+    DiscountValidationResponse:
+      type: object
+      properties:
+        code:
+          type: string
+        discount_type:
+          type: string
+        value:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        discount_amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        new_subtotal:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+      required:
+      - code
+      - discount_amount
+      - discount_type
+      - new_subtotal
+      - value
+    Invoice:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        invoice_number:
+          type: string
+          readOnly: true
+          description: Unique sequential invoice number, e.g. INV-2026-000001
+        customer:
+          type: integer
+        customer_name:
+          type: string
+          readOnly: true
+        customer_email:
+          type: string
+          readOnly: true
+        subscription:
+          type: integer
+          nullable: true
+        plan_name:
+          type: string
+          readOnly: true
+        status:
+          $ref: '#/components/schemas/Status84aEnum'
+        issue_date:
+          type: string
+          format: date
+        due_date:
+          type: string
+          format: date
+        period_start:
+          type: string
+          format: date
+          nullable: true
+        period_end:
+          type: string
+          format: date
+          nullable: true
+        subtotal:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        discount_amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        tax_amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        total_amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        amount_paid:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          readOnly: true
+        balance_due:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          readOnly: true
+        currency:
+          type: string
+          maxLength: 10
+        notes:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - amount_paid
+      - balance_due
+      - created_at
+      - customer
+      - customer_email
+      - customer_name
+      - due_date
+      - id
+      - invoice_number
+      - issue_date
+      - plan_name
+      - updated_at
+    InvoiceDetail:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        invoice_number:
+          type: string
+          readOnly: true
+          description: Unique sequential invoice number, e.g. INV-2026-000001
+        customer:
+          type: integer
+        customer_name:
+          type: string
+          readOnly: true
+        customer_email:
+          type: string
+          readOnly: true
+        subscription:
+          type: integer
+          nullable: true
+        plan_name:
+          type: string
+          readOnly: true
+        status:
+          $ref: '#/components/schemas/Status84aEnum'
+        issue_date:
+          type: string
+          format: date
+        due_date:
+          type: string
+          format: date
+        period_start:
+          type: string
+          format: date
+          nullable: true
+        period_end:
+          type: string
+          format: date
+          nullable: true
+        subtotal:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        discount_amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        tax_amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        total_amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        amount_paid:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          readOnly: true
+        balance_due:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          readOnly: true
+        currency:
+          type: string
+          maxLength: 10
+        notes:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+        line_items:
+          type: array
+          items:
+            $ref: '#/components/schemas/InvoiceLineItem'
+          readOnly: true
+      required:
+      - amount_paid
+      - balance_due
+      - created_at
+      - customer
+      - customer_email
+      - customer_name
+      - due_date
+      - id
+      - invoice_number
+      - issue_date
+      - line_items
+      - plan_name
+      - updated_at
+    InvoiceDetailRequest:
+      type: object
+      properties:
+        customer:
+          type: integer
+        subscription:
+          type: integer
+          nullable: true
+        status:
+          $ref: '#/components/schemas/Status84aEnum'
+        issue_date:
+          type: string
+          format: date
+        due_date:
+          type: string
+          format: date
+        period_start:
+          type: string
+          format: date
+          nullable: true
+        period_end:
+          type: string
+          format: date
+          nullable: true
+        subtotal:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        discount_amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        tax_amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        total_amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        currency:
+          type: string
+          minLength: 1
+          maxLength: 10
+        notes:
+          type: string
+      required:
+      - customer
+      - due_date
+      - issue_date
+    InvoiceLineItem:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        description:
+          type: string
+          maxLength: 255
+        quantity:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        unit_price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        total_price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          readOnly: true
+      required:
+      - description
+      - id
+      - total_price
+      - unit_price
+    InvoiceLineItemRequest:
+      type: object
+      properties:
+        description:
+          type: string
+          minLength: 1
+          maxLength: 255
+        quantity:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        unit_price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+      required:
+      - description
+      - unit_price
+    InvoiceRequest:
+      type: object
+      properties:
+        customer:
+          type: integer
+        subscription:
+          type: integer
+          nullable: true
+        status:
+          $ref: '#/components/schemas/Status84aEnum'
+        issue_date:
+          type: string
+          format: date
+        due_date:
+          type: string
+          format: date
+        period_start:
+          type: string
+          format: date
+          nullable: true
+        period_end:
+          type: string
+          format: date
+          nullable: true
+        subtotal:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        discount_amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        tax_amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        total_amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        currency:
+          type: string
+          minLength: 1
+          maxLength: 10
+        notes:
+          type: string
+      required:
+      - customer
+      - due_date
+      - issue_date
+    LoginRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          minLength: 1
+        password:
+          type: string
+          writeOnly: true
+          minLength: 1
+      required:
+      - email
+      - password
+    LogoutResponse:
+      type: object
+      properties:
+        message:
+          type: string
+      required:
+      - message
+    Notification:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        recipient_email:
+          type: string
+          format: email
+          readOnly: true
+        customer:
+          type: integer
+          readOnly: true
+          nullable: true
+        subject:
+          type: string
+          readOnly: true
+        message:
+          type: string
+          readOnly: true
+        notification_type:
+          allOf:
+          - $ref: '#/components/schemas/NotificationTypeEnum'
+          readOnly: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/NotificationStatusEnum'
+          readOnly: true
+        sent_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - customer
+      - id
+      - message
+      - notification_type
+      - recipient_email
+      - sent_at
+      - status
+      - subject
+    NotificationStatusEnum:
+      enum:
+      - pending
+      - sent
+      - failed
+      type: string
+      description: |-
+        * `pending` - Pending
+        * `sent` - Sent
+        * `failed` - Failed
+    NotificationTypeEnum:
+      enum:
+      - invoice_created
+      - payment_received
+      - subscription_canceled
+      - billing_failed
+      - general
+      type: string
+      description: |-
+        * `invoice_created` - Invoice Created
+        * `payment_received` - Payment Received
+        * `subscription_canceled` - Subscription Canceled
+        * `billing_failed` - Billing Failed
+        * `general` - General Notification
+    PaginatedBillingExecutionRecordList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/BillingExecutionRecord'
+    PaginatedCustomerList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Customer'
+    PaginatedDiscountList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Discount'
+    PaginatedInvoiceList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Invoice'
+    PaginatedNotificationList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Notification'
+    PaginatedPaymentList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Payment'
+    PaginatedPlanList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Plan'
+    PaginatedSubscriptionList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Subscription'
+    PatchedCustomerRequest:
+      type: object
+      properties:
+        company_name:
+          type: string
+          minLength: 1
+          maxLength: 255
+        email:
+          type: string
+          format: email
+          minLength: 1
+          maxLength: 255
+        phone:
+          type: string
+          maxLength: 30
+        billing_address:
+          type: string
+        city:
+          type: string
+          maxLength: 100
+        state:
+          type: string
+          maxLength: 100
+        postal_code:
+          type: string
+          maxLength: 20
+        country:
+          type: string
+          maxLength: 100
+        tax_id:
+          type: string
+          title: GSTIN / Tax ID
+          description: Goods and Services Tax Identification Number for Indian billing.
+          maxLength: 50
+        currency:
+          type: string
+          minLength: 1
+          maxLength: 10
+        status:
+          $ref: '#/components/schemas/Status69aEnum'
+    PatchedDiscountRequest:
+      type: object
+      properties:
+        code:
+          type: string
+          minLength: 1
+          maxLength: 50
+        description:
+          type: string
+          maxLength: 255
+        discount_type:
+          $ref: '#/components/schemas/DiscountTypeEnum'
+        value:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          description: Percentage (e.g. 20.00 for 20%) or Flat INR Amount (e.g. 500.00)
+        min_subtotal:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          description: Minimum invoice subtotal required to redeem coupon.
+        max_redemptions:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          nullable: true
+          description: Total allowed redemptions across all customers. Null for unlimited.
+        valid_from:
+          type: string
+          format: date-time
+        valid_until:
+          type: string
+          format: date-time
+        is_active:
+          type: boolean
+    PatchedInvoiceRequest:
+      type: object
+      properties:
+        customer:
+          type: integer
+        subscription:
+          type: integer
+          nullable: true
+        status:
+          $ref: '#/components/schemas/Status84aEnum'
+        issue_date:
+          type: string
+          format: date
+        due_date:
+          type: string
+          format: date
+        period_start:
+          type: string
+          format: date
+          nullable: true
+        period_end:
+          type: string
+          format: date
+          nullable: true
+        subtotal:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        discount_amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        tax_amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        total_amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        currency:
+          type: string
+          minLength: 1
+          maxLength: 10
+        notes:
+          type: string
+    PatchedPaymentRequest:
+      type: object
+      properties:
+        invoice:
+          type: integer
+        customer:
+          type: integer
+        amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          description: Payment amount in INR
+        currency:
+          type: string
+          minLength: 1
+          maxLength: 10
+        payment_method:
+          $ref: '#/components/schemas/PaymentMethodEnum'
+        transaction_reference:
+          type: string
+          description: Bank/Gateway UTR or reference number.
+          maxLength: 100
+    PatchedPlanRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+        code:
+          type: string
+          minLength: 1
+          maxLength: 100
+          pattern: ^[-a-zA-Z0-9_]+$
+        description:
+          type: string
+        tier:
+          $ref: '#/components/schemas/TierEnum'
+        billing_frequency:
+          $ref: '#/components/schemas/BillingFrequencyEnum'
+        price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          description: Price in INR
+        currency:
+          type: string
+          minLength: 1
+          maxLength: 10
+        trial_period_days:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        features:
+          description: List of feature strings included in this plan.
+        is_active:
+          type: boolean
+        display_order:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+    PatchedSubscriptionRequest:
+      type: object
+      properties:
+        customer:
+          type: integer
+        start_date:
+          type: string
+          format: date
+        cancel_at_period_end:
+          type: boolean
+    Payment:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        payment_number:
+          type: string
+          readOnly: true
+          description: Unique transaction ID, e.g. PAY-2026-000001
+        invoice:
+          type: integer
+        invoice_number:
+          type: string
+          readOnly: true
+        customer:
+          type: integer
+        customer_name:
+          type: string
+          readOnly: true
+        amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          description: Payment amount in INR
+        currency:
+          type: string
+          maxLength: 10
+        payment_method:
+          $ref: '#/components/schemas/PaymentMethodEnum'
+        status:
+          allOf:
+          - $ref: '#/components/schemas/PaymentStatusEnum'
+          readOnly: true
+        transaction_reference:
+          type: string
+          description: Bank/Gateway UTR or reference number.
+          maxLength: 100
+        processed_at:
+          type: string
+          format: date-time
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - amount
+      - created_at
+      - customer
+      - customer_name
+      - id
+      - invoice
+      - invoice_number
+      - payment_number
+      - processed_at
+      - status
+      - updated_at
+    PaymentMethodEnum:
+      enum:
+      - upi
+      - card
+      - netbanking
+      - bank_transfer
+      type: string
+      description: |-
+        * `upi` - Unified Payments Interface (UPI)
+        * `card` - Credit / Debit Card
+        * `netbanking` - Net Banking
+        * `bank_transfer` - NEFT / RTGS Bank Transfer
+    PaymentRequest:
+      type: object
+      properties:
+        invoice:
+          type: integer
+        customer:
+          type: integer
+        amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          description: Payment amount in INR
+        currency:
+          type: string
+          minLength: 1
+          maxLength: 10
+        payment_method:
+          $ref: '#/components/schemas/PaymentMethodEnum'
+        transaction_reference:
+          type: string
+          description: Bank/Gateway UTR or reference number.
+          maxLength: 100
+      required:
+      - amount
+      - customer
+      - invoice
+    PaymentStatusEnum:
+      enum:
+      - pending
+      - succeeded
+      - failed
+      - refunded
+      type: string
+      description: |-
+        * `pending` - Pending
+        * `succeeded` - Succeeded
+        * `failed` - Failed
+        * `refunded` - Refunded
+    Plan:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 100
+        code:
+          type: string
+          maxLength: 100
+          pattern: ^[-a-zA-Z0-9_]+$
+        description:
+          type: string
+        tier:
+          $ref: '#/components/schemas/TierEnum'
+        billing_frequency:
+          $ref: '#/components/schemas/BillingFrequencyEnum'
+        price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          description: Price in INR
+        price_formatted:
+          type: string
+          readOnly: true
+        currency:
+          type: string
+          maxLength: 10
+        trial_period_days:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        features:
+          description: List of feature strings included in this plan.
+        is_active:
+          type: boolean
+        display_order:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - code
+      - created_at
+      - id
+      - name
+      - price
+      - price_formatted
+      - updated_at
+    PlanDistributionItem:
+      type: object
+      properties:
+        plan_name:
+          type: string
+        tier:
+          type: string
+        subscribers:
+          type: integer
+      required:
+      - plan_name
+      - subscribers
+      - tier
+    PlanRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+        code:
+          type: string
+          minLength: 1
+          maxLength: 100
+          pattern: ^[-a-zA-Z0-9_]+$
+        description:
+          type: string
+        tier:
+          $ref: '#/components/schemas/TierEnum'
+        billing_frequency:
+          $ref: '#/components/schemas/BillingFrequencyEnum'
+        price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          description: Price in INR
+        currency:
+          type: string
+          minLength: 1
+          maxLength: 10
+        trial_period_days:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        features:
+          description: List of feature strings included in this plan.
+        is_active:
+          type: boolean
+        display_order:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+      required:
+      - code
+      - name
+      - price
+    RevenueTrendItem:
+      type: object
+      properties:
+        month:
+          type: string
+        invoiced:
+          type: number
+          format: double
+        collected:
+          type: number
+          format: double
+      required:
+      - collected
+      - invoiced
+      - month
+    RoleEnum:
+      enum:
+      - ADMIN
+      - STAFF
+      - CUSTOMER
+      type: string
+      description: |-
+        * `ADMIN` - Administrator
+        * `STAFF` - Staff Member
+        * `CUSTOMER` - Customer
+    Status69aEnum:
+      enum:
+      - active
+      - suspended
+      - churned
+      type: string
+      description: |-
+        * `active` - Active
+        * `suspended` - Suspended
+        * `churned` - Churned
+    Status84aEnum:
+      enum:
+      - draft
+      - open
+      - paid
+      - void
+      - uncollectible
+      type: string
+      description: |-
+        * `draft` - Draft
+        * `open` - Open
+        * `paid` - Paid
+        * `void` - Void
+        * `uncollectible` - Uncollectible
+    Subscription:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        customer:
+          type: integer
+        customer_company:
+          type: string
+          readOnly: true
+        customer_email:
+          type: string
+          readOnly: true
+        plan:
+          allOf:
+          - $ref: '#/components/schemas/Plan'
+          readOnly: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/SubscriptionStatusEnum'
+          readOnly: true
+        start_date:
+          type: string
+          format: date
+        current_period_start:
+          type: string
+          format: date
+          readOnly: true
+        current_period_end:
+          type: string
+          format: date
+          readOnly: true
+        trial_end:
+          type: string
+          format: date
+          readOnly: true
+          nullable: true
+        cancel_at_period_end:
+          type: boolean
+        canceled_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        paused_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - canceled_at
+      - created_at
+      - current_period_end
+      - current_period_start
+      - customer
+      - customer_company
+      - customer_email
+      - id
+      - paused_at
+      - plan
+      - start_date
+      - status
+      - trial_end
+      - updated_at
+    SubscriptionRequest:
+      type: object
+      properties:
+        customer:
+          type: integer
+        start_date:
+          type: string
+          format: date
+        cancel_at_period_end:
+          type: boolean
+      required:
+      - customer
+      - start_date
+    SubscriptionStatusEnum:
+      enum:
+      - trialing
+      - active
+      - past_due
+      - canceled
+      - paused
+      type: string
+      description: |-
+        * `trialing` - Trialing
+        * `active` - Active
+        * `past_due` - Past Due
+        * `canceled` - Canceled
+        * `paused` - Paused
+    TierEnum:
+      enum:
+      - starter
+      - growth
+      - enterprise
+      type: string
+      description: |-
+        * `starter` - Starter
+        * `growth` - Growth
+        * `enterprise` - Enterprise
+    TriggerBillingRequest:
+      type: object
+      properties:
+        target_date:
+          type: string
+          format: date
+        dry_run:
+          type: boolean
+          default: false
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        email:
+          type: string
+          format: email
+          title: Email Address
+          description: Primary email address, case-insensitive unique.
+          maxLength: 255
+        full_name:
+          type: string
+          maxLength: 255
+        role:
+          $ref: '#/components/schemas/RoleEnum'
+        is_staff:
+          type: boolean
+          readOnly: true
+        is_superuser:
+          type: boolean
+          readOnly: true
+          title: Superuser status
+          description: Designates that this user has all permissions without explicitly
+            assigning them.
+        is_active:
+          type: boolean
+        date_joined:
+          type: string
+          format: date-time
+          readOnly: true
+        customer_id:
+          type: integer
+          nullable: true
+          readOnly: true
+      required:
+      - customer_id
+      - date_joined
+      - email
+      - id
+      - is_staff
+      - is_superuser
+    UserRegistrationRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          minLength: 1
+        password:
+          type: string
+          writeOnly: true
+          minLength: 8
+        full_name:
+          type: string
+          minLength: 1
+          maxLength: 255
+        company_name:
+          type: string
+          minLength: 1
+          default: ''
+          maxLength: 255
+      required:
+      - email
+      - full_name
+      - password
+    ValidateDiscountRequest:
+      type: object
+      properties:
+        code:
+          type: string
+          minLength: 1
+          maxLength: 50
+        subtotal:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+      required:
+      - code
+      - subtotal
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: sessionid

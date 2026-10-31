@@ -1,0 +1,55 @@
+name: Scheduled Subscription Billing
+
+on:
+  schedule:
+    # Runs at 00:00 UTC (05:30 IST) every day
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+    inputs:
+      target_date:
+        description: 'Target billing date (YYYY-MM-DD), leave empty for today'
+        required: false
+        default: ''
+      dry_run:
+        description: 'Dry run mode (true/false)'
+        type: boolean
+        required: false
+        default: false
+
+jobs:
+  run-billing:
+    name: Execute PlanLedger Billing Engine
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: "pip"
+
+      - name: Install Dependencies
+        working-directory: apps/api
+        run: |
+          pip install -r requirements.txt
+
+      - name: Execute Billing Management Command
+        working-directory: apps/api
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          SECRET_KEY: ${{ secrets.SECRET_KEY }}
+          BREVO_API_KEY: ${{ secrets.BREVO_API_KEY }}
+          BREVO_SMTP_LOGIN: ${{ secrets.BREVO_SMTP_LOGIN }}
+          BREVO_SMTP_PASSWORD: ${{ secrets.BREVO_SMTP_PASSWORD }}
+          DEFAULT_FROM_EMAIL: ${{ secrets.DEFAULT_FROM_EMAIL }}
+        run: |
+          EXTRA_ARGS=""
+          if [ -n "${{ github.event.inputs.target_date }}" ]; then
+            EXTRA_ARGS="$EXTRA_ARGS --date=${{ github.event.inputs.target_date }}"
+          fi
+          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+            EXTRA_ARGS="$EXTRA_ARGS --dry-run"
+          fi
+          python manage.py run_billing $EXTRA_ARGS

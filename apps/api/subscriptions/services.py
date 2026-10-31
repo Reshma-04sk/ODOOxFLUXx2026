@@ -1,23 +1,24 @@
 from datetime import date, timedelta
+from decimal import Decimal
 from django.utils import timezone
 from django.db import transaction
 from .models import Subscription
 from plans.models import Plan
+from notifications.services import EmailService
+from notifications.models import Notification
 from common.exceptions import InvalidStateTransitionError, BusinessLogicError
+from common.money import round_money
 
 
 class SubscriptionService:
     @staticmethod
     def calculate_period_end(start_date: date, billing_frequency: str) -> date:
         if billing_frequency == Plan.BillingFrequency.YEARLY:
-            # Approximate 365 days or 1 calendar year
             try:
                 return start_date.replace(year=start_date.year + 1)
             except ValueError:
-                # Leap year handling (Feb 29)
                 return start_date + timedelta(days=365)
         else:
-            # Monthly: approximate 30 days
             return start_date + timedelta(days=30)
 
     @classmethod
@@ -49,6 +50,24 @@ class SubscriptionService:
             current_period_end=period_end,
             trial_end=trial_end,
         )
+
+        try:
+            EmailService.send_notification(
+                recipient_email=customer.email,
+                customer=customer,
+                subject=f"Welcome to {plan.name}!",
+                message=(
+                    f"Dear {customer.company_name},\n\n"
+                    f"Your subscription to {plan.name} has been activated.\n"
+                    f"Status: {status.upper()}\n"
+                    f"Current Period: {start_date} to {period_end}\n\n"
+                    f"PlanLedger Team"
+                ),
+                notification_type=Notification.NotificationType.GENERAL,
+            )
+        except Exception:
+            pass
+
         return subscription
 
     @classmethod
@@ -66,6 +85,23 @@ class SubscriptionService:
             subscription.cancel_at_period_end = True
 
         subscription.save()
+
+        try:
+            EmailService.send_notification(
+                recipient_email=subscription.customer.email,
+                customer=subscription.customer,
+                subject=f"Subscription Canceled: {subscription.plan.name}",
+                message=(
+                    f"Dear {subscription.customer.company_name},\n\n"
+                    f"Your subscription to {subscription.plan.name} has been marked for cancellation.\n"
+                    f"Effective: {'Immediately' if immediate else f'At period end ({subscription.current_period_end})'}\n\n"
+                    f"PlanLedger Support"
+                ),
+                notification_type=Notification.NotificationType.SUBSCRIPTION_CANCELED,
+            )
+        except Exception:
+            pass
+
         return subscription
 
     @classmethod
@@ -103,6 +139,24 @@ class SubscriptionService:
         if subscription.plan_id == new_plan.id:
             raise BusinessLogicError("Subscription is already on the specified plan.")
 
+        old_plan_name = subscription.plan.name
         subscription.plan = new_plan
         subscription.save()
+
+        try:
+            EmailService.send_notification(
+                recipient_email=subscription.customer.email,
+                customer=subscription.customer,
+                subject=f"Subscription Upgraded to {new_plan.name}",
+                message=(
+                    f"Dear {subscription.customer.company_name},\n\n"
+                    f"Your subscription has been switched from {old_plan_name} to {new_plan.name}.\n"
+                    f"New Recurring Fee: ₹{new_plan.price:,.2f} ({new_plan.get_billing_frequency_display()})\n\n"
+                    f"PlanLedger Support"
+                ),
+                notification_type=Notification.NotificationType.GENERAL,
+            )
+        except Exception:
+            pass
+
         return subscription

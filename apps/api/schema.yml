@@ -659,7 +659,7 @@ paths:
       operationId: invoices_list
       description: |-
         Invoice management API.
-        Provides invoice listing, detail with line items, manual creation, and voiding.
+        Provides invoice listing, detail with line items, manual creation, voiding, and printable receipts.
       parameters:
       - in: query
         name: currency
@@ -728,7 +728,7 @@ paths:
       operationId: invoices_create
       description: |-
         Invoice management API.
-        Provides invoice listing, detail with line items, manual creation, and voiding.
+        Provides invoice listing, detail with line items, manual creation, voiding, and printable receipts.
       tags:
       - invoices
       requestBody:
@@ -757,7 +757,7 @@ paths:
       operationId: invoices_retrieve
       description: |-
         Invoice management API.
-        Provides invoice listing, detail with line items, manual creation, and voiding.
+        Provides invoice listing, detail with line items, manual creation, voiding, and printable receipts.
       parameters:
       - in: path
         name: id
@@ -780,7 +780,7 @@ paths:
       operationId: invoices_update
       description: |-
         Invoice management API.
-        Provides invoice listing, detail with line items, manual creation, and voiding.
+        Provides invoice listing, detail with line items, manual creation, voiding, and printable receipts.
       parameters:
       - in: path
         name: id
@@ -815,7 +815,7 @@ paths:
       operationId: invoices_partial_update
       description: |-
         Invoice management API.
-        Provides invoice listing, detail with line items, manual creation, and voiding.
+        Provides invoice listing, detail with line items, manual creation, voiding, and printable receipts.
       parameters:
       - in: path
         name: id
@@ -849,7 +849,7 @@ paths:
       operationId: invoices_destroy
       description: |-
         Invoice management API.
-        Provides invoice listing, detail with line items, manual creation, and voiding.
+        Provides invoice listing, detail with line items, manual creation, voiding, and printable receipts.
       parameters:
       - in: path
         name: id
@@ -864,12 +864,36 @@ paths:
       responses:
         '204':
           description: No response body
+  /api/v1/invoices/{id}/receipt/:
+    get:
+      operationId: invoices_receipt_retrieve
+      description: |-
+        Renders a printable GST Tax Invoice receipt.
+        Accepts ?export=html for raw printable HTML or default JSON receipt details.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Invoice.
+        required: true
+      tags:
+      - invoices
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvoiceDetail'
+          description: ''
   /api/v1/invoices/{id}/void/:
     post:
       operationId: invoices_void_create
       description: |-
         Invoice management API.
-        Provides invoice listing, detail with line items, manual creation, and voiding.
+        Provides invoice listing, detail with line items, manual creation, voiding, and printable receipts.
       parameters:
       - in: path
         name: id
@@ -985,7 +1009,7 @@ paths:
   /api/v1/payments/:
     get:
       operationId: payments_list
-      description: Payment recording and transaction tracking API.
+      description: Payment recording, refunds, and transaction tracking API.
       parameters:
       - in: query
         name: customer
@@ -1060,7 +1084,7 @@ paths:
           description: ''
     post:
       operationId: payments_create
-      description: Payment recording and transaction tracking API.
+      description: Payment recording, refunds, and transaction tracking API.
       tags:
       - payments
       requestBody:
@@ -1087,7 +1111,7 @@ paths:
   /api/v1/payments/{id}/:
     get:
       operationId: payments_retrieve
-      description: Payment recording and transaction tracking API.
+      description: Payment recording, refunds, and transaction tracking API.
       parameters:
       - in: path
         name: id
@@ -1108,7 +1132,7 @@ paths:
           description: ''
     put:
       operationId: payments_update
-      description: Payment recording and transaction tracking API.
+      description: Payment recording, refunds, and transaction tracking API.
       parameters:
       - in: path
         name: id
@@ -1141,7 +1165,7 @@ paths:
           description: ''
     patch:
       operationId: payments_partial_update
-      description: Payment recording and transaction tracking API.
+      description: Payment recording, refunds, and transaction tracking API.
       parameters:
       - in: path
         name: id
@@ -1173,7 +1197,7 @@ paths:
           description: ''
     delete:
       operationId: payments_destroy
-      description: Payment recording and transaction tracking API.
+      description: Payment recording, refunds, and transaction tracking API.
       parameters:
       - in: path
         name: id
@@ -1188,6 +1212,40 @@ paths:
       responses:
         '204':
           description: No response body
+  /api/v1/payments/{id}/refund/:
+    post:
+      operationId: payments_refund_create
+      description: Process a partial or full refund on a succeeded payment (Staff
+        only).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Payment.
+        required: true
+      tags:
+      - payments
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefundPaymentRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/RefundPaymentRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RefundPaymentRequest'
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Payment'
+          description: ''
   /api/v1/plans/:
     get:
       operationId: plans_list
@@ -3208,6 +3266,18 @@ components:
       - code
       - name
       - price
+    RefundPaymentRequest:
+      type: object
+      properties:
+        refund_amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        reason:
+          type: string
+          minLength: 1
+          default: Customer requested refund
+          maxLength: 255
     RevenueTrendItem:
       type: object
       properties:

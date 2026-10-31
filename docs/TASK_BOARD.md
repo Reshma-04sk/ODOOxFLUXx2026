@@ -40,6 +40,8 @@
 | **B-10** | P1 | Build `run_billing` management command and GitHub Actions daily cron | `billing` / `ci` | Completed |
 | **B-11** | P1 | Generate OpenAPI schema and Swagger UI via `drf-spectacular` | `config` / `docs` | Completed |
 | **B-12** | P2 | Prepare high-scale seed data script (5k subscriptions, 20k invoices) | `infrastructure` | Completed |
+| **B-13** | P1 | Build Product Catalog, Variant Surcharges, Taxes & Quotation Templates | `catalog` | Completed |
+| **B-14** | P1 | Enforce Plan Lifecycle flags & Per-line `InvoiceLineTax` snapshots | `plans` / `invoices` | Completed |
 
 ---
 

@@ -88,7 +88,7 @@ Backend will be live at `http://localhost:8000/`.
 ---
 
 ## 10. First Five Tasks in Priority Order
-1. **Verify Migrations & Test Suite**: Run `python manage.py test tests` to verify all 33 unit tests pass.
+1. **Verify Migrations & Test Suite**: Run `python manage.py test tests` to verify all 48 unit tests pass.
 2. **Execute Seed Data Generator**: Run `python ../../infrastructure/scripts/seed_data.py --fast` to populate plans, test customers, subscriptions, and invoices.
 3. **Verify Billing Engine Idempotency**: Run `python manage.py run_billing --dry-run` to test automated subscription renewal evaluation.
 4. **Configure Neon PostgreSQL & Render**: Connect environment variables on Render for production API deployment.

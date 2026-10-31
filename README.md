@@ -92,10 +92,11 @@ planledger/
 │   │   ├── invoices/          # GST invoices & line items
 │   │   ├── payments/          # Transaction ledger & overpayment guard
 │   │   ├── discounts/         # Promotional coupons & redemption
+│   │   ├── catalog/           # Products, variants, taxes, payment terms & quotations
 │   │   ├── analytics/         # MRR, ARR, churn rate, ARPU
 │   │   ├── notifications/     # In-app and Brevo email notifications
 │   │   ├── common/            # Money utilities, pagination, exceptions
-│   │   └── tests/             # 33 unit tests across all domains
+│   │   └── tests/             # 48 unit tests across all domains
 │   │
 │   └── web/                   # Next.js 16 App Router frontend
 │       ├── src/app/           # Public pages & dashboard routes
@@ -179,7 +180,7 @@ When the backend is running, open:
 ---
 
 ## 12. Testing Instructions
-Run the automated test suite (33 tests):
+Run the automated test suite (48 tests):
 ```bash
 cd apps/api
 python manage.py test tests --verbosity=2

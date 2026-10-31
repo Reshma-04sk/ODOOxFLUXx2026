@@ -77,3 +77,78 @@ class PaymentTests(TestCase):
                 invoice=self.invoice,
                 amount=Decimal("100.00"),
             )
+
+    def test_process_refund_full(self):
+        """Full refund updates payment status to REFUNDED, resets invoice balance, and sets status back to OPEN."""
+        payment = PaymentService.record_payment(
+            invoice=self.invoice,
+            amount=Decimal("1180.00"),
+            payment_method=Payment.PaymentMethod.UPI,
+        )
+        self.invoice.refresh_from_db()
+        self.assertEqual(self.invoice.status, Invoice.Status.PAID)
+        self.assertEqual(self.invoice.balance_due, Decimal("0.00"))
+
+        refunded = PaymentService.process_refund(
+            payment=payment,
+            reason="Customer dissatisfaction",
+        )
+        self.assertEqual(refunded.status, Payment.Status.REFUNDED)
+        self.invoice.refresh_from_db()
+        self.assertEqual(self.invoice.amount_paid, Decimal("0.00"))
+        self.assertEqual(self.invoice.balance_due, Decimal("1180.00"))
+        self.assertEqual(self.invoice.status, Invoice.Status.OPEN)
+
+    def test_process_refund_partial(self):
+        """Partial refund deducts from amount_paid and increases balance_due proportionally."""
+        payment = PaymentService.record_payment(
+            invoice=self.invoice,
+            amount=Decimal("1180.00"),
+            payment_method=Payment.PaymentMethod.CARD,
+        )
+        PaymentService.process_refund(
+            payment=payment,
+            refund_amount=Decimal("300.00"),
+            reason="Partial credit adjustment",
+        )
+        self.invoice.refresh_from_db()
+        self.assertEqual(self.invoice.amount_paid, Decimal("880.00"))
+        self.assertEqual(self.invoice.balance_due, Decimal("300.00"))
+        self.assertEqual(self.invoice.status, Invoice.Status.OPEN)
+
+    def test_refund_exceeding_payment_rejected(self):
+        """Refund amount greater than the original payment amount must raise BusinessLogicError."""
+        payment = PaymentService.record_payment(
+            invoice=self.invoice,
+            amount=Decimal("500.00"),
+            payment_method=Payment.PaymentMethod.BANK_TRANSFER,
+        )
+        with self.assertRaises(BusinessLogicError):
+            PaymentService.process_refund(
+                payment=payment,
+                refund_amount=Decimal("600.00"),
+            )
+
+    def test_refund_api_staff_permission(self):
+        """Only staff members can initiate refunds via the API endpoint."""
+        payment = PaymentService.record_payment(
+            invoice=self.invoice,
+            amount=Decimal("500.00"),
+            payment_method=Payment.PaymentMethod.UPI,
+        )
+        refund_url = reverse("payments:payment-refund", kwargs={"pk": payment.id})
+
+        # Regular customer user -> 403 Forbidden
+        res_forbidden = self.client.post(refund_url, {"refund_amount": "500.00"})
+        self.assertEqual(res_forbidden.status_code, status.HTTP_403_FORBIDDEN)
+
+        # Staff user -> 200 OK
+        staff_user = User.objects.create_superuser(
+            email="admin@brightloop.io",
+            password="AdminPassword123!",
+            full_name="Admin User",
+        )
+        self.client.force_authenticate(user=staff_user)
+        res_ok = self.client.post(refund_url, {"refund_amount": "500.00", "reason": "Authorized refund"})
+        self.assertEqual(res_ok.status_code, status.HTTP_200_OK)
+        self.assertEqual(res_ok.data["status"], Payment.Status.REFUNDED)

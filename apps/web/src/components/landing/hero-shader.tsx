@@ -11,7 +11,7 @@ export function HeroShaderVisual() {
     // Check user reduced motion preference
     const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
     if (mediaQuery.matches) {
-      setHasWebGL(false);
+      setTimeout(() => setHasWebGL(false), 0);
       return;
     }
 
@@ -23,11 +23,11 @@ export function HeroShaderVisual() {
       const canvas = document.createElement("canvas");
       const gl = canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
       if (!gl) {
-        setHasWebGL(false);
+        setTimeout(() => setHasWebGL(false), 0);
         return;
       }
     } catch {
-      setHasWebGL(false);
+      setTimeout(() => setHasWebGL(false), 0);
       return;
     }
 
@@ -92,7 +92,7 @@ export function HeroShaderVisual() {
     scene.add(knot);
 
     let animationFrameId: number;
-    let clock = new THREE.Clock();
+    const clock = new THREE.Clock();
 
     const animate = () => {
       const elapsedTime = clock.getElapsedTime();

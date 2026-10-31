@@ -9,6 +9,26 @@ class IsStaffOrReadOnly(permissions.BasePermission):
         return bool(request.user and request.user.is_authenticated and (request.user.is_staff or request.user.is_superuser))
 
 
+class IsAdminOrStaffReadOnly(permissions.BasePermission):
+    """
+    Enforces admin-only writes for catalog, taxes, and discounts.
+    Staff members have read-only access (GET, HEAD, OPTIONS).
+    Admin and Superuser accounts have full write access (POST, PUT, PATCH, DELETE).
+    """
+    def has_permission(self, request, view):
+        user = request.user
+        if not (user and user.is_authenticated):
+            return False
+
+        is_admin = user.is_superuser or getattr(user, "role", None) == "ADMIN"
+        is_staff_member = user.is_staff or getattr(user, "role", None) in ["ADMIN", "STAFF"]
+
+        if request.method in permissions.SAFE_METHODS:
+            return is_staff_member or is_admin
+
+        return is_admin
+
+
 class IsCustomerOrStaff(permissions.BasePermission):
     """
     Enforces customer isolation.

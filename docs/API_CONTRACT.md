@@ -34,10 +34,29 @@
 | Method | Endpoint | Description | Auth Required |
 | :--- | :--- | :--- | :--- |
 | `GET` | `/` | List active plans | None |
-| `GET` | `/{id}/` | Plan details | None |
+| `GET` | `/{id}/` | Plan details (with lifecycle rules & flags) | None |
 | `POST` | `/` | Create new tier | Staff / Admin |
 
 ---
+
+## 4. Catalog & Quotations (`/api/v1/catalog/`)
+*Access Control: Admin writes only; Staff read-only for catalog entities.*
+
+| Method | Endpoint | Description | Auth Required |
+| :--- | :--- | :--- | :--- |
+| `GET` | `/products/` | List products with variant trees & taxes | Staff / Admin |
+| `POST` | `/products/` | Create product (sales_price, cost_price, notes) | Admin |
+| `GET/POST`| `/taxes/` | Manage taxes (percentage GST, fixed cess) | Admin write / Staff read |
+| `GET/POST`| `/payment-terms/` | Manage payment terms (due_days) | Admin write / Staff read |
+| `GET/POST`| `/attributes/` | Variant attributes (Brand, Storage, Seats) | Admin write / Staff read |
+| `GET/POST`| `/attribute-values/`| Attribute values with extra_price surcharges | Admin write / Staff read |
+| `GET/POST`| `/templates/` | Quotation templates with plan & lines | Admin write / Staff read |
+| `GET` | `/quotations/` | List quotations (tenant isolated) | Yes |
+| `POST` | `/quotations/create_from_template/` | Instantiate quotation from template | Yes |
+| `POST` | `/quotations/{id}/confirm_subscription/` | Provision active Subscription from quotation | Yes |
+
+---
+
 
 ## 4. Subscriptions (`/api/v1/subscriptions/`)
 
@@ -61,6 +80,7 @@
 | `POST` | `/` | Generate manual invoice | Yes |
 | `GET` | `/{id}/` | Get invoice detail with line items | Yes |
 | `POST` | `/{id}/void/` | Void an open invoice | Yes |
+| `GET` | `/{id}/receipt/` | Tax Invoice receipt (supports `?export=html`) | Yes |
 
 ---
 
@@ -70,6 +90,7 @@
 | :--- | :--- | :--- | :--- |
 | `GET` | `/` | List payment transactions | Yes |
 | `POST` | `/` | Record payment (`invoice_id`, `amount`, `payment_method`) | Yes |
+| `POST` | `/{id}/refund/` | Process refund (`refund_amount`, `reason`) | Staff / Admin |
 
 ---
 
@@ -98,3 +119,13 @@
 | `GET` | `/overview/` | MRR, ARR, active subscribers, churn rate | Yes |
 | `GET` | `/trends/` | Monthly invoiced vs collected revenue | Yes |
 | `GET` | `/distribution/` | Subscriber distribution by plan tier | Yes |
+
+---
+
+## 10. System & Health Check (`/api/health/`, `/healthz`)
+
+| Method | Endpoint | Description | Auth Required |
+| :--- | :--- | :--- | :--- |
+| `GET` | `/api/health/` | Service health, database connectivity, and latency check | None |
+| `GET` | `/healthz` | Lightweight liveness probe alias | None |
+

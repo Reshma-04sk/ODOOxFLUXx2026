@@ -72,10 +72,10 @@ export const apiService = {
 
   // Customers
   customers: {
-    list: async (params?: Record<string, any>): Promise<PaginatedResponse<Customer>> => {
+    list: async (params?: Record<string, string | number | boolean | undefined>): Promise<PaginatedResponse<Customer>> => {
       try {
         return await apiClient<PaginatedResponse<Customer>>("/customers/", { params });
-      } catch (err) {
+      } catch {
         console.warn("Using mock customers fallback");
         return {
           count: MOCK_CUSTOMERS.length,
@@ -109,7 +109,7 @@ export const apiService = {
     list: async (): Promise<PaginatedResponse<Plan>> => {
       try {
         return await apiClient<PaginatedResponse<Plan>>("/plans/");
-      } catch (err) {
+      } catch {
         console.warn("Using mock plans fallback");
         return {
           count: MOCK_PLANS.length,
@@ -125,10 +125,10 @@ export const apiService = {
 
   // Subscriptions
   subscriptions: {
-    list: async (params?: Record<string, any>): Promise<PaginatedResponse<Subscription>> => {
+    list: async (params?: Record<string, string | number | boolean | undefined>): Promise<PaginatedResponse<Subscription>> => {
       try {
         return await apiClient<PaginatedResponse<Subscription>>("/subscriptions/", { params });
-      } catch (err) {
+      } catch {
         console.warn("Using mock subscriptions fallback");
         return {
           count: MOCK_SUBSCRIPTIONS.length,
@@ -162,10 +162,10 @@ export const apiService = {
 
   // Invoices
   invoices: {
-    list: async (params?: Record<string, any>): Promise<PaginatedResponse<Invoice>> => {
+    list: async (params?: Record<string, string | number | boolean | undefined>): Promise<PaginatedResponse<Invoice>> => {
       try {
         return await apiClient<PaginatedResponse<Invoice>>("/invoices/", { params });
-      } catch (err) {
+      } catch {
         console.warn("Using mock invoices fallback");
         return {
           count: MOCK_INVOICES.length,
@@ -193,10 +193,10 @@ export const apiService = {
 
   // Payments
   payments: {
-    list: async (params?: Record<string, any>): Promise<PaginatedResponse<Payment>> => {
+    list: async (params?: Record<string, string | number | boolean | undefined>): Promise<PaginatedResponse<Payment>> => {
       try {
         return await apiClient<PaginatedResponse<Payment>>("/payments/", { params });
-      } catch (err) {
+      } catch {
         console.warn("Using mock payments fallback");
         return {
           count: MOCK_PAYMENTS.length,
@@ -226,7 +226,7 @@ export const apiService = {
     list: async (): Promise<PaginatedResponse<Discount>> => {
       try {
         return await apiClient<PaginatedResponse<Discount>>("/discounts/");
-      } catch (err) {
+      } catch {
         return {
           count: MOCK_DISCOUNTS.length,
           next: null,

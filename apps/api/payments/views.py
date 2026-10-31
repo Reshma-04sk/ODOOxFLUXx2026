@@ -1,18 +1,20 @@
 from rest_framework import viewsets, permissions, status, filters
+from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.exceptions import NotFound, PermissionDenied
 from django_filters.rest_framework import DjangoFilterBackend
+from drf_spectacular.utils import extend_schema
 
 from .models import Payment
 from .services import PaymentService
-from .serializers import PaymentSerializer, RecordPaymentSerializer
+from .serializers import PaymentSerializer, RecordPaymentSerializer, RefundPaymentSerializer
 from invoices.models import Invoice
 from common.permissions import IsCustomerOrStaff
 
 
 class PaymentViewSet(viewsets.ModelViewSet):
     """
-    Payment recording and transaction tracking API.
+    Payment recording, refunds, and transaction tracking API.
     """
     queryset = Payment.objects.select_related("invoice", "customer").all().order_by("-processed_at")
     serializer_class = PaymentSerializer
@@ -61,3 +63,24 @@ class PaymentViewSet(viewsets.ModelViewSet):
         )
 
         return Response(PaymentSerializer(payment).data, status=status.HTTP_201_CREATED)
+
+    @extend_schema(request=RefundPaymentSerializer, responses={200: PaymentSerializer})
+    @action(detail=True, methods=["post"])
+    def refund(self, request, pk=None):
+        """
+        Process a partial or full refund on a succeeded payment (Staff only).
+        """
+        user = request.user
+        if not (user.is_staff or user.is_superuser):
+            raise PermissionDenied("Only staff members can process refunds.")
+
+        payment = self.get_object()
+        serializer = RefundPaymentSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        refunded_payment = PaymentService.process_refund(
+            payment=payment,
+            refund_amount=serializer.validated_data.get("refund_amount"),
+            reason=serializer.validated_data.get("reason", "Customer requested refund"),
+        )
+        return Response(PaymentSerializer(refunded_payment).data, status=status.HTTP_200_OK)

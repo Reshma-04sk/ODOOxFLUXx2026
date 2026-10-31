@@ -4,6 +4,30 @@ info:
   version: 1.0.0
   description: Brightloop Software Subscription Management & Billing Engine API
 paths:
+  /api/health/:
+    get:
+      operationId: api_health_retrieve
+      description: |-
+        Production health check endpoint for monitoring uptime,
+        database connectivity, and service readiness.
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthCheckSuccessResponse'
+          description: ''
+        '503':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthCheckErrorResponse'
+          description: ''
   /api/v1/accounts/csrf/:
     get:
       operationId: accounts_csrf_retrieve
@@ -248,6 +272,1446 @@ paths:
               schema:
                 $ref: '#/components/schemas/BillingExecutionRecord'
           description: ''
+  /api/v1/catalog/attribute-values/:
+    get:
+      operationId: catalog_attribute_values_list
+      description: Attribute values with pricing surcharges (e.g. Brand=Odoo +560.00).
+      parameters:
+      - in: query
+        name: attribute
+        schema:
+          type: integer
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - catalog
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedAttributeValueList'
+          description: ''
+    post:
+      operationId: catalog_attribute_values_create
+      description: Attribute values with pricing surcharges (e.g. Brand=Odoo +560.00).
+      tags:
+      - catalog
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AttributeValueRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AttributeValueRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AttributeValueRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AttributeValue'
+          description: ''
+  /api/v1/catalog/attribute-values/{id}/:
+    get:
+      operationId: catalog_attribute_values_retrieve
+      description: Attribute values with pricing surcharges (e.g. Brand=Odoo +560.00).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Attribute Value.
+        required: true
+      tags:
+      - catalog
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AttributeValue'
+          description: ''
+    put:
+      operationId: catalog_attribute_values_update
+      description: Attribute values with pricing surcharges (e.g. Brand=Odoo +560.00).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Attribute Value.
+        required: true
+      tags:
+      - catalog
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AttributeValueRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AttributeValueRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AttributeValueRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AttributeValue'
+          description: ''
+    patch:
+      operationId: catalog_attribute_values_partial_update
+      description: Attribute values with pricing surcharges (e.g. Brand=Odoo +560.00).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Attribute Value.
+        required: true
+      tags:
+      - catalog
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedAttributeValueRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedAttributeValueRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedAttributeValueRequest'
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AttributeValue'
+          description: ''
+    delete:
+      operationId: catalog_attribute_values_destroy
+      description: Attribute values with pricing surcharges (e.g. Brand=Odoo +560.00).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Attribute Value.
+        required: true
+      tags:
+      - catalog
+      security:
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/catalog/attributes/:
+    get:
+      operationId: catalog_attributes_list
+      description: Product variant attributes (e.g. Brand, Storage, Seats).
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - catalog
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedAttributeList'
+          description: ''
+    post:
+      operationId: catalog_attributes_create
+      description: Product variant attributes (e.g. Brand, Storage, Seats).
+      tags:
+      - catalog
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AttributeRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AttributeRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AttributeRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Attribute'
+          description: ''
+  /api/v1/catalog/attributes/{id}/:
+    get:
+      operationId: catalog_attributes_retrieve
+      description: Product variant attributes (e.g. Brand, Storage, Seats).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Product Attribute.
+        required: true
+      tags:
+      - catalog
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Attribute'
+          description: ''
+    put:
+      operationId: catalog_attributes_update
+      description: Product variant attributes (e.g. Brand, Storage, Seats).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Product Attribute.
+        required: true
+      tags:
+      - catalog
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AttributeRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AttributeRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AttributeRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Attribute'
+          description: ''
+    patch:
+      operationId: catalog_attributes_partial_update
+      description: Product variant attributes (e.g. Brand, Storage, Seats).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Product Attribute.
+        required: true
+      tags:
+      - catalog
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedAttributeRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedAttributeRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedAttributeRequest'
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Attribute'
+          description: ''
+    delete:
+      operationId: catalog_attributes_destroy
+      description: Product variant attributes (e.g. Brand, Storage, Seats).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Product Attribute.
+        required: true
+      tags:
+      - catalog
+      security:
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/catalog/payment-terms/:
+    get:
+      operationId: catalog_payment_terms_list
+      description: Payment terms and due day intervals (Admin writes only, Staff read-only).
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - catalog
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedPaymentTermList'
+          description: ''
+    post:
+      operationId: catalog_payment_terms_create
+      description: Payment terms and due day intervals (Admin writes only, Staff read-only).
+      tags:
+      - catalog
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaymentTermRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PaymentTermRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PaymentTermRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentTerm'
+          description: ''
+  /api/v1/catalog/payment-terms/{id}/:
+    get:
+      operationId: catalog_payment_terms_retrieve
+      description: Payment terms and due day intervals (Admin writes only, Staff read-only).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Payment Term.
+        required: true
+      tags:
+      - catalog
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentTerm'
+          description: ''
+    put:
+      operationId: catalog_payment_terms_update
+      description: Payment terms and due day intervals (Admin writes only, Staff read-only).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Payment Term.
+        required: true
+      tags:
+      - catalog
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaymentTermRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PaymentTermRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PaymentTermRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentTerm'
+          description: ''
+    patch:
+      operationId: catalog_payment_terms_partial_update
+      description: Payment terms and due day intervals (Admin writes only, Staff read-only).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Payment Term.
+        required: true
+      tags:
+      - catalog
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedPaymentTermRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedPaymentTermRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedPaymentTermRequest'
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentTerm'
+          description: ''
+    delete:
+      operationId: catalog_payment_terms_destroy
+      description: Payment terms and due day intervals (Admin writes only, Staff read-only).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Payment Term.
+        required: true
+      tags:
+      - catalog
+      security:
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/catalog/products/:
+    get:
+      operationId: catalog_products_list
+      description: Products and services catalog (Admin writes only, Staff read-only).
+      parameters:
+      - in: query
+        name: is_active
+        schema:
+          type: boolean
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: type
+        schema:
+          type: string
+          enum:
+          - consu
+          - product
+          - service
+        description: |-
+          * `service` - Service
+          * `consu` - Consumable
+          * `product` - Storable Product
+      tags:
+      - catalog
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedProductList'
+          description: ''
+    post:
+      operationId: catalog_products_create
+      description: Products and services catalog (Admin writes only, Staff read-only).
+      tags:
+      - catalog
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ProductRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ProductRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+          description: ''
+  /api/v1/catalog/products/{id}/:
+    get:
+      operationId: catalog_products_retrieve
+      description: Products and services catalog (Admin writes only, Staff read-only).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Product.
+        required: true
+      tags:
+      - catalog
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+          description: ''
+    put:
+      operationId: catalog_products_update
+      description: Products and services catalog (Admin writes only, Staff read-only).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Product.
+        required: true
+      tags:
+      - catalog
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ProductRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ProductRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+          description: ''
+    patch:
+      operationId: catalog_products_partial_update
+      description: Products and services catalog (Admin writes only, Staff read-only).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Product.
+        required: true
+      tags:
+      - catalog
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedProductRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedProductRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedProductRequest'
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+          description: ''
+    delete:
+      operationId: catalog_products_destroy
+      description: Products and services catalog (Admin writes only, Staff read-only).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Product.
+        required: true
+      tags:
+      - catalog
+      security:
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/catalog/quotations/:
+    get:
+      operationId: catalog_quotations_list
+      description: Quotation management, template instantiations, and subscription
+        conversions.
+      parameters:
+      - in: query
+        name: customer
+        schema:
+          type: integer
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: plan
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: status
+        schema:
+          type: string
+          enum:
+          - canceled
+          - confirmed
+          - draft
+          - sent
+        description: |-
+          * `draft` - Draft
+          * `sent` - Sent
+          * `confirmed` - Confirmed
+          * `canceled` - Canceled
+      tags:
+      - catalog
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedQuotationList'
+          description: ''
+    post:
+      operationId: catalog_quotations_create
+      description: Quotation management, template instantiations, and subscription
+        conversions.
+      tags:
+      - catalog
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QuotationRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/QuotationRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/QuotationRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Quotation'
+          description: ''
+  /api/v1/catalog/quotations/{id}/:
+    get:
+      operationId: catalog_quotations_retrieve
+      description: Quotation management, template instantiations, and subscription
+        conversions.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Quotation.
+        required: true
+      tags:
+      - catalog
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Quotation'
+          description: ''
+    put:
+      operationId: catalog_quotations_update
+      description: Quotation management, template instantiations, and subscription
+        conversions.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Quotation.
+        required: true
+      tags:
+      - catalog
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QuotationRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/QuotationRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/QuotationRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Quotation'
+          description: ''
+    patch:
+      operationId: catalog_quotations_partial_update
+      description: Quotation management, template instantiations, and subscription
+        conversions.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Quotation.
+        required: true
+      tags:
+      - catalog
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedQuotationRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedQuotationRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedQuotationRequest'
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Quotation'
+          description: ''
+    delete:
+      operationId: catalog_quotations_destroy
+      description: Quotation management, template instantiations, and subscription
+        conversions.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Quotation.
+        required: true
+      tags:
+      - catalog
+      security:
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/catalog/quotations/{id}/confirm_subscription/:
+    post:
+      operationId: catalog_quotations_confirm_subscription_create
+      description: Confirms a Quotation and provisions an active Subscription with
+        lines and event audit history.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Quotation.
+        required: true
+      tags:
+      - catalog
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Subscription'
+          description: ''
+  /api/v1/catalog/quotations/create_from_template/:
+    post:
+      operationId: catalog_quotations_create_from_template_create
+      description: Creates a new draft Quotation from a QuotationTemplate.
+      tags:
+      - catalog
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateQuotationFromTemplateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CreateQuotationFromTemplateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CreateQuotationFromTemplateRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Quotation'
+          description: ''
+  /api/v1/catalog/taxes/:
+    get:
+      operationId: catalog_taxes_list
+      description: Tax rates and GST classifications (Admin writes only, Staff read-only).
+      parameters:
+      - in: query
+        name: is_active
+        schema:
+          type: boolean
+      - in: query
+        name: kind
+        schema:
+          type: string
+          enum:
+          - fixed
+          - percent
+        description: |-
+          * `percent` - Percentage
+          * `fixed` - Fixed Amount
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - catalog
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedTaxList'
+          description: ''
+    post:
+      operationId: catalog_taxes_create
+      description: Tax rates and GST classifications (Admin writes only, Staff read-only).
+      tags:
+      - catalog
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TaxRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TaxRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TaxRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tax'
+          description: ''
+  /api/v1/catalog/taxes/{id}/:
+    get:
+      operationId: catalog_taxes_retrieve
+      description: Tax rates and GST classifications (Admin writes only, Staff read-only).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Tax.
+        required: true
+      tags:
+      - catalog
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tax'
+          description: ''
+    put:
+      operationId: catalog_taxes_update
+      description: Tax rates and GST classifications (Admin writes only, Staff read-only).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Tax.
+        required: true
+      tags:
+      - catalog
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TaxRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TaxRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TaxRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tax'
+          description: ''
+    patch:
+      operationId: catalog_taxes_partial_update
+      description: Tax rates and GST classifications (Admin writes only, Staff read-only).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Tax.
+        required: true
+      tags:
+      - catalog
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedTaxRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedTaxRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedTaxRequest'
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tax'
+          description: ''
+    delete:
+      operationId: catalog_taxes_destroy
+      description: Tax rates and GST classifications (Admin writes only, Staff read-only).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Tax.
+        required: true
+      tags:
+      - catalog
+      security:
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/catalog/templates/:
+    get:
+      operationId: catalog_templates_list
+      description: Pre-configured quotation templates for subscription packages.
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - catalog
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedQuotationTemplateList'
+          description: ''
+    post:
+      operationId: catalog_templates_create
+      description: Pre-configured quotation templates for subscription packages.
+      tags:
+      - catalog
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QuotationTemplateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/QuotationTemplateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/QuotationTemplateRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QuotationTemplate'
+          description: ''
+  /api/v1/catalog/templates/{id}/:
+    get:
+      operationId: catalog_templates_retrieve
+      description: Pre-configured quotation templates for subscription packages.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Quotation Template.
+        required: true
+      tags:
+      - catalog
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QuotationTemplate'
+          description: ''
+    put:
+      operationId: catalog_templates_update
+      description: Pre-configured quotation templates for subscription packages.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Quotation Template.
+        required: true
+      tags:
+      - catalog
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QuotationTemplateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/QuotationTemplateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/QuotationTemplateRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QuotationTemplate'
+          description: ''
+    patch:
+      operationId: catalog_templates_partial_update
+      description: Pre-configured quotation templates for subscription packages.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Quotation Template.
+        required: true
+      tags:
+      - catalog
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedQuotationTemplateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedQuotationTemplateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedQuotationTemplateRequest'
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QuotationTemplate'
+          description: ''
+    delete:
+      operationId: catalog_templates_destroy
+      description: Pre-configured quotation templates for subscription packages.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Quotation Template.
+        required: true
+      tags:
+      - catalog
+      security:
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/catalog/variants/:
+    get:
+      operationId: catalog_variants_list
+      description: Configured product variants.
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: product
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - catalog
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedProductVariantList'
+          description: ''
+    post:
+      operationId: catalog_variants_create
+      description: Configured product variants.
+      tags:
+      - catalog
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductVariantRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ProductVariantRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ProductVariantRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductVariant'
+          description: ''
+  /api/v1/catalog/variants/{id}/:
+    get:
+      operationId: catalog_variants_retrieve
+      description: Configured product variants.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Product Variant.
+        required: true
+      tags:
+      - catalog
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductVariant'
+          description: ''
+    put:
+      operationId: catalog_variants_update
+      description: Configured product variants.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Product Variant.
+        required: true
+      tags:
+      - catalog
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductVariantRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ProductVariantRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ProductVariantRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductVariant'
+          description: ''
+    patch:
+      operationId: catalog_variants_partial_update
+      description: Configured product variants.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Product Variant.
+        required: true
+      tags:
+      - catalog
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedProductVariantRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedProductVariantRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedProductVariantRequest'
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductVariant'
+          description: ''
+    delete:
+      operationId: catalog_variants_destroy
+      description: Configured product variants.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Product Variant.
+        required: true
+      tags:
+      - catalog
+      security:
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
   /api/v1/customers/:
     get:
       operationId: customers_list
@@ -445,7 +1909,9 @@ paths:
   /api/v1/discounts/:
     get:
       operationId: discounts_list
-      description: Discount codes and promotional coupons management.
+      description: |-
+        Discount codes and promotional coupons management.
+        Admin-only writes; Staff read-only.
       parameters:
       - in: query
         name: discount_type
@@ -498,7 +1964,9 @@ paths:
           description: ''
     post:
       operationId: discounts_create
-      description: Discount codes and promotional coupons management.
+      description: |-
+        Discount codes and promotional coupons management.
+        Admin-only writes; Staff read-only.
       tags:
       - discounts
       requestBody:
@@ -525,7 +1993,9 @@ paths:
   /api/v1/discounts/{id}/:
     get:
       operationId: discounts_retrieve
-      description: Discount codes and promotional coupons management.
+      description: |-
+        Discount codes and promotional coupons management.
+        Admin-only writes; Staff read-only.
       parameters:
       - in: path
         name: id
@@ -546,7 +2016,9 @@ paths:
           description: ''
     put:
       operationId: discounts_update
-      description: Discount codes and promotional coupons management.
+      description: |-
+        Discount codes and promotional coupons management.
+        Admin-only writes; Staff read-only.
       parameters:
       - in: path
         name: id
@@ -579,7 +2051,9 @@ paths:
           description: ''
     patch:
       operationId: discounts_partial_update
-      description: Discount codes and promotional coupons management.
+      description: |-
+        Discount codes and promotional coupons management.
+        Admin-only writes; Staff read-only.
       parameters:
       - in: path
         name: id
@@ -611,7 +2085,9 @@ paths:
           description: ''
     delete:
       operationId: discounts_destroy
-      description: Discount codes and promotional coupons management.
+      description: |-
+        Discount codes and promotional coupons management.
+        Admin-only writes; Staff read-only.
       parameters:
       - in: path
         name: id
@@ -659,7 +2135,7 @@ paths:
       operationId: invoices_list
       description: |-
         Invoice management API.
-        Provides invoice listing, detail with line items, manual creation, and voiding.
+        Provides invoice listing, detail with line items, manual creation, voiding, and printable receipts.
       parameters:
       - in: query
         name: currency
@@ -728,7 +2204,7 @@ paths:
       operationId: invoices_create
       description: |-
         Invoice management API.
-        Provides invoice listing, detail with line items, manual creation, and voiding.
+        Provides invoice listing, detail with line items, manual creation, voiding, and printable receipts.
       tags:
       - invoices
       requestBody:
@@ -757,7 +2233,7 @@ paths:
       operationId: invoices_retrieve
       description: |-
         Invoice management API.
-        Provides invoice listing, detail with line items, manual creation, and voiding.
+        Provides invoice listing, detail with line items, manual creation, voiding, and printable receipts.
       parameters:
       - in: path
         name: id
@@ -780,7 +2256,7 @@ paths:
       operationId: invoices_update
       description: |-
         Invoice management API.
-        Provides invoice listing, detail with line items, manual creation, and voiding.
+        Provides invoice listing, detail with line items, manual creation, voiding, and printable receipts.
       parameters:
       - in: path
         name: id
@@ -815,7 +2291,7 @@ paths:
       operationId: invoices_partial_update
       description: |-
         Invoice management API.
-        Provides invoice listing, detail with line items, manual creation, and voiding.
+        Provides invoice listing, detail with line items, manual creation, voiding, and printable receipts.
       parameters:
       - in: path
         name: id
@@ -849,7 +2325,7 @@ paths:
       operationId: invoices_destroy
       description: |-
         Invoice management API.
-        Provides invoice listing, detail with line items, manual creation, and voiding.
+        Provides invoice listing, detail with line items, manual creation, voiding, and printable receipts.
       parameters:
       - in: path
         name: id
@@ -864,12 +2340,36 @@ paths:
       responses:
         '204':
           description: No response body
+  /api/v1/invoices/{id}/receipt/:
+    get:
+      operationId: invoices_receipt_retrieve
+      description: |-
+        Renders a printable GST Tax Invoice receipt.
+        Accepts ?export=html for raw printable HTML or default JSON receipt details.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Invoice.
+        required: true
+      tags:
+      - invoices
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvoiceDetail'
+          description: ''
   /api/v1/invoices/{id}/void/:
     post:
       operationId: invoices_void_create
       description: |-
         Invoice management API.
-        Provides invoice listing, detail with line items, manual creation, and voiding.
+        Provides invoice listing, detail with line items, manual creation, voiding, and printable receipts.
       parameters:
       - in: path
         name: id
@@ -985,7 +2485,7 @@ paths:
   /api/v1/payments/:
     get:
       operationId: payments_list
-      description: Payment recording and transaction tracking API.
+      description: Payment recording, refunds, and transaction tracking API.
       parameters:
       - in: query
         name: customer
@@ -1060,7 +2560,7 @@ paths:
           description: ''
     post:
       operationId: payments_create
-      description: Payment recording and transaction tracking API.
+      description: Payment recording, refunds, and transaction tracking API.
       tags:
       - payments
       requestBody:
@@ -1087,7 +2587,7 @@ paths:
   /api/v1/payments/{id}/:
     get:
       operationId: payments_retrieve
-      description: Payment recording and transaction tracking API.
+      description: Payment recording, refunds, and transaction tracking API.
       parameters:
       - in: path
         name: id
@@ -1108,7 +2608,7 @@ paths:
           description: ''
     put:
       operationId: payments_update
-      description: Payment recording and transaction tracking API.
+      description: Payment recording, refunds, and transaction tracking API.
       parameters:
       - in: path
         name: id
@@ -1141,7 +2641,7 @@ paths:
           description: ''
     patch:
       operationId: payments_partial_update
-      description: Payment recording and transaction tracking API.
+      description: Payment recording, refunds, and transaction tracking API.
       parameters:
       - in: path
         name: id
@@ -1173,7 +2673,7 @@ paths:
           description: ''
     delete:
       operationId: payments_destroy
-      description: Payment recording and transaction tracking API.
+      description: Payment recording, refunds, and transaction tracking API.
       parameters:
       - in: path
         name: id
@@ -1188,6 +2688,40 @@ paths:
       responses:
         '204':
           description: No response body
+  /api/v1/payments/{id}/refund/:
+    post:
+      operationId: payments_refund_create
+      description: Process a partial or full refund on a succeeded payment (Staff
+        only).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Payment.
+        required: true
+      tags:
+      - payments
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefundPaymentRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/RefundPaymentRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RefundPaymentRequest'
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Payment'
+          description: ''
   /api/v1/plans/:
     get:
       operationId: plans_list
@@ -1745,6 +3279,30 @@ paths:
               schema:
                 $ref: '#/components/schemas/Subscription'
           description: ''
+  /healthz:
+    get:
+      operationId: healthz_retrieve
+      description: |-
+        Production health check endpoint for monitoring uptime,
+        database connectivity, and service readiness.
+      tags:
+      - healthz
+      security:
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthCheckSuccessResponse'
+          description: ''
+        '503':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthCheckErrorResponse'
+          description: ''
 components:
   schemas:
     AnalyticsOverview:
@@ -1785,6 +3343,92 @@ components:
       - total_revenue
       - total_subscriptions
       - trialing_subscriptions
+    Attribute:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 100
+        values:
+          type: array
+          items:
+            $ref: '#/components/schemas/AttributeValue'
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - name
+      - updated_at
+      - values
+    AttributeRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+      required:
+      - name
+    AttributeValue:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        attribute:
+          type: integer
+        name:
+          type: string
+          maxLength: 100
+        extra_price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          description: Additional price surcharge for this variant attribute (e.g.
+            Brand=Odoo +560.00)
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - attribute
+      - created_at
+      - id
+      - name
+      - updated_at
+    AttributeValueRequest:
+      type: object
+      properties:
+        attribute:
+          type: integer
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+        extra_price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          description: Additional price surcharge for this variant attribute (e.g.
+            Brand=Odoo +560.00)
+      required:
+      - attribute
+      - name
     BillingExecutionRecord:
       type: object
       properties:
@@ -1873,6 +3517,15 @@ components:
           type: integer
       required:
       - new_plan_id
+    CreateQuotationFromTemplateRequest:
+      type: object
+      properties:
+        template_id:
+          type: integer
+        customer_id:
+          type: integer
+      required:
+      - template_id
     Customer:
       type: object
       properties:
@@ -2169,6 +3822,41 @@ components:
       - discount_type
       - new_subtotal
       - value
+    HealthCheckErrorResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          default: degraded
+        service:
+          type: string
+          default: planledger-api
+        database:
+          type: string
+          default: error
+        error:
+          type: string
+      required:
+      - error
+    HealthCheckSuccessResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          default: ok
+        service:
+          type: string
+          default: planledger-api
+        database:
+          type: string
+          default: connected
+        version:
+          type: string
+          default: 1.0.0
+        latency_ms:
+          type: number
+          format: double
+          default: 1.2
     Invoice:
       type: object
       properties:
@@ -2415,6 +4103,12 @@ components:
         id:
           type: integer
           readOnly: true
+        product:
+          type: integer
+          nullable: true
+        variant:
+          type: integer
+          nullable: true
         description:
           type: string
           maxLength: 255
@@ -2427,19 +4121,37 @@ components:
           type: string
           format: decimal
           pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        tax_amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          readOnly: true
         total_price:
           type: string
           format: decimal
           pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
           readOnly: true
+        taxes:
+          type: array
+          items:
+            $ref: '#/components/schemas/InvoiceLineTax'
+          readOnly: true
       required:
       - description
       - id
+      - tax_amount
+      - taxes
       - total_price
       - unit_price
     InvoiceLineItemRequest:
       type: object
       properties:
+        product:
+          type: integer
+          nullable: true
+        variant:
+          type: integer
+          nullable: true
         description:
           type: string
           minLength: 1
@@ -2456,6 +4168,47 @@ components:
       required:
       - description
       - unit_price
+    InvoiceLineTax:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 100
+        rate:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,2}(?:\.\d{0,4})?$
+        amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+      required:
+      - amount
+      - id
+      - name
+      - rate
+    InvoiceLineTaxRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+        rate:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,2}(?:\.\d{0,4})?$
+        amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+      required:
+      - amount
+      - name
+      - rate
     InvoiceRequest:
       type: object
       properties:
@@ -2506,6 +4259,14 @@ components:
       - customer
       - due_date
       - issue_date
+    KindEnum:
+      enum:
+      - percent
+      - fixed
+      type: string
+      description: |-
+        * `percent` - Percentage
+        * `fixed` - Fixed Amount
     LoginRequest:
       type: object
       properties:
@@ -2598,6 +4359,52 @@ components:
         * `subscription_canceled` - Subscription Canceled
         * `billing_failed` - Billing Failed
         * `general` - General Notification
+    PaginatedAttributeList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Attribute'
+    PaginatedAttributeValueList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/AttributeValue'
     PaginatedBillingExecutionRecordList:
       type: object
       required:
@@ -2736,6 +4543,29 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Payment'
+    PaginatedPaymentTermList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/PaymentTerm'
     PaginatedPlanList:
       type: object
       required:
@@ -2759,6 +4589,98 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Plan'
+    PaginatedProductList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Product'
+    PaginatedProductVariantList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductVariant'
+    PaginatedQuotationList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Quotation'
+    PaginatedQuotationTemplateList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/QuotationTemplate'
     PaginatedSubscriptionList:
       type: object
       required:
@@ -2782,6 +4704,51 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Subscription'
+    PaginatedTaxList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Tax'
+    PatchedAttributeRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+    PatchedAttributeValueRequest:
+      type: object
+      properties:
+        attribute:
+          type: integer
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+        extra_price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          description: Additional price surcharge for this variant attribute (e.g.
+            Brand=Odoo +560.00)
     PatchedCustomerRequest:
       type: object
       properties:
@@ -2927,6 +4894,21 @@ components:
           type: string
           description: Bank/Gateway UTR or reference number.
           maxLength: 100
+    PatchedPaymentTermRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+        due_days:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          description: Number of days until payment is due after invoice issuance.
+        notes:
+          type: string
     PatchedPlanRequest:
       type: object
       properties:
@@ -2968,15 +4950,158 @@ components:
           maximum: 9223372036854775807
           minimum: 0
           format: int64
+        interval_count:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          description: Number of billing intervals, e.g. 1 month, 3 months, 1 year.
+        min_qty:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          description: Minimum subscriber seat or item quantity required.
+        start_date:
+          type: string
+          format: date
+          nullable: true
+          description: Date from which plan is active.
+        end_date:
+          type: string
+          format: date
+          nullable: true
+          description: Date until which plan remains available for new subscribers.
+        auto_close:
+          type: boolean
+          description: Automatically close subscription at the end of the billing
+            period without renewal.
+        closable:
+          type: boolean
+          description: Allow subscription to be canceled/closed by subscriber or staff.
+        pausable:
+          type: boolean
+          description: Allow subscription on this plan to be paused.
+        renewable:
+          type: boolean
+          description: Allow subscription on this plan to be renewed.
+    PatchedProductRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 255
+        type:
+          $ref: '#/components/schemas/TypeEnum'
+        sales_price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          description: Base sales price in INR
+        cost_price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          description: Cost price in INR
+        notes:
+          type: string
+        is_active:
+          type: boolean
+        taxes:
+          type: array
+          items:
+            type: integer
+        attributes:
+          type: array
+          items:
+            type: integer
+    PatchedProductVariantRequest:
+      type: object
+      properties:
+        product:
+          type: integer
+        sku:
+          type: string
+          nullable: true
+          maxLength: 100
+        attribute_values:
+          type: array
+          items:
+            type: integer
+    PatchedQuotationRequest:
+      type: object
+      properties:
+        customer:
+          type: integer
+        template:
+          type: integer
+          nullable: true
+        plan:
+          type: integer
+          nullable: true
+        payment_term:
+          type: integer
+          nullable: true
+        status:
+          $ref: '#/components/schemas/QuotationStatusEnum'
+        order_date:
+          type: string
+          format: date
+        validity_date:
+          type: string
+          format: date
+        notes:
+          type: string
+    PatchedQuotationTemplateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 255
+        plan:
+          type: integer
+          nullable: true
+        validity_days:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          description: Validity of quotation in days from issue.
+        payment_term:
+          type: integer
+          nullable: true
+        notes:
+          type: string
     PatchedSubscriptionRequest:
       type: object
       properties:
         customer:
           type: integer
+        payment_term:
+          type: integer
+          nullable: true
         start_date:
           type: string
           format: date
         cancel_at_period_end:
+          type: boolean
+    PatchedTaxRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+        rate:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,2}(?:\.\d{0,4})?$
+          description: Tax rate. E.g. 0.1800 for 18% GST or 18.0000
+        kind:
+          $ref: '#/components/schemas/KindEnum'
+        is_active:
           type: boolean
     Payment:
       type: object
@@ -3090,6 +5215,53 @@ components:
         * `succeeded` - Succeeded
         * `failed` - Failed
         * `refunded` - Refunded
+    PaymentTerm:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 100
+        due_days:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          description: Number of days until payment is due after invoice issuance.
+        notes:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - name
+      - updated_at
+    PaymentTermRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+        due_days:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          description: Number of days until payment is due after invoice issuance.
+        notes:
+          type: string
+      required:
+      - name
     Plan:
       type: object
       properties:
@@ -3134,6 +5306,41 @@ components:
           maximum: 9223372036854775807
           minimum: 0
           format: int64
+        interval_count:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          description: Number of billing intervals, e.g. 1 month, 3 months, 1 year.
+        min_qty:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          description: Minimum subscriber seat or item quantity required.
+        start_date:
+          type: string
+          format: date
+          nullable: true
+          description: Date from which plan is active.
+        end_date:
+          type: string
+          format: date
+          nullable: true
+          description: Date until which plan remains available for new subscribers.
+        auto_close:
+          type: boolean
+          description: Automatically close subscription at the end of the billing
+            period without renewal.
+        closable:
+          type: boolean
+          description: Allow subscription to be canceled/closed by subscriber or staff.
+        pausable:
+          type: boolean
+          description: Allow subscription on this plan to be paused.
+        renewable:
+          type: boolean
+          description: Allow subscription on this plan to be renewed.
         created_at:
           type: string
           format: date-time
@@ -3204,10 +5411,550 @@ components:
           maximum: 9223372036854775807
           minimum: 0
           format: int64
+        interval_count:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          description: Number of billing intervals, e.g. 1 month, 3 months, 1 year.
+        min_qty:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          description: Minimum subscriber seat or item quantity required.
+        start_date:
+          type: string
+          format: date
+          nullable: true
+          description: Date from which plan is active.
+        end_date:
+          type: string
+          format: date
+          nullable: true
+          description: Date until which plan remains available for new subscribers.
+        auto_close:
+          type: boolean
+          description: Automatically close subscription at the end of the billing
+            period without renewal.
+        closable:
+          type: boolean
+          description: Allow subscription to be canceled/closed by subscriber or staff.
+        pausable:
+          type: boolean
+          description: Allow subscription on this plan to be paused.
+        renewable:
+          type: boolean
+          description: Allow subscription on this plan to be renewed.
       required:
       - code
       - name
       - price
+    Product:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 255
+        type:
+          $ref: '#/components/schemas/TypeEnum'
+        sales_price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          description: Base sales price in INR
+        cost_price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          description: Cost price in INR
+        notes:
+          type: string
+        is_active:
+          type: boolean
+        taxes:
+          type: array
+          items:
+            type: integer
+        taxes_details:
+          type: array
+          items:
+            $ref: '#/components/schemas/Tax'
+          readOnly: true
+        attributes:
+          type: array
+          items:
+            type: integer
+        variants:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductVariant'
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - name
+      - taxes_details
+      - updated_at
+      - variants
+    ProductRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 255
+        type:
+          $ref: '#/components/schemas/TypeEnum'
+        sales_price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          description: Base sales price in INR
+        cost_price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          description: Cost price in INR
+        notes:
+          type: string
+        is_active:
+          type: boolean
+        taxes:
+          type: array
+          items:
+            type: integer
+        attributes:
+          type: array
+          items:
+            type: integer
+      required:
+      - name
+    ProductVariant:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        product:
+          type: integer
+        sku:
+          type: string
+          nullable: true
+          maxLength: 100
+        attribute_values:
+          type: array
+          items:
+            type: integer
+        attribute_value_details:
+          type: array
+          items:
+            $ref: '#/components/schemas/AttributeValue'
+          readOnly: true
+        extra_price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          readOnly: true
+        effective_price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - attribute_value_details
+      - created_at
+      - effective_price
+      - extra_price
+      - id
+      - product
+      - updated_at
+    ProductVariantRequest:
+      type: object
+      properties:
+        product:
+          type: integer
+        sku:
+          type: string
+          nullable: true
+          maxLength: 100
+        attribute_values:
+          type: array
+          items:
+            type: integer
+      required:
+      - product
+    Quotation:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        quotation_number:
+          type: string
+          readOnly: true
+          description: Sequential quotation identifier, e.g. QUO-2026-000001
+        customer:
+          type: integer
+        customer_company:
+          type: string
+          readOnly: true
+        template:
+          type: integer
+          nullable: true
+        plan:
+          type: integer
+          nullable: true
+        plan_name:
+          type: string
+          readOnly: true
+        payment_term:
+          type: integer
+          nullable: true
+        status:
+          $ref: '#/components/schemas/QuotationStatusEnum'
+        order_date:
+          type: string
+          format: date
+        validity_date:
+          type: string
+          format: date
+        subtotal:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          readOnly: true
+        tax_amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          readOnly: true
+        total_amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          readOnly: true
+        notes:
+          type: string
+        subscription:
+          type: integer
+          readOnly: true
+          nullable: true
+        lines:
+          type: array
+          items:
+            $ref: '#/components/schemas/QuotationLine'
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - customer
+      - customer_company
+      - id
+      - lines
+      - plan_name
+      - quotation_number
+      - subscription
+      - subtotal
+      - tax_amount
+      - total_amount
+      - updated_at
+      - validity_date
+    QuotationLine:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        product:
+          type: integer
+        variant:
+          type: integer
+          nullable: true
+        description:
+          type: string
+          maxLength: 255
+        quantity:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        unit_price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          description: Snapshot unit price inclusive of variant extra charges.
+        subtotal:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          readOnly: true
+        tax_amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          readOnly: true
+        total_price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          readOnly: true
+        taxes:
+          type: array
+          items:
+            type: integer
+        taxes_details:
+          type: array
+          items:
+            $ref: '#/components/schemas/Tax'
+          readOnly: true
+      required:
+      - description
+      - id
+      - product
+      - subtotal
+      - tax_amount
+      - taxes_details
+      - total_price
+      - unit_price
+    QuotationLineRequest:
+      type: object
+      properties:
+        product:
+          type: integer
+        variant:
+          type: integer
+          nullable: true
+        description:
+          type: string
+          minLength: 1
+          maxLength: 255
+        quantity:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        unit_price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          description: Snapshot unit price inclusive of variant extra charges.
+        taxes:
+          type: array
+          items:
+            type: integer
+      required:
+      - description
+      - product
+      - unit_price
+    QuotationRequest:
+      type: object
+      properties:
+        customer:
+          type: integer
+        template:
+          type: integer
+          nullable: true
+        plan:
+          type: integer
+          nullable: true
+        payment_term:
+          type: integer
+          nullable: true
+        status:
+          $ref: '#/components/schemas/QuotationStatusEnum'
+        order_date:
+          type: string
+          format: date
+        validity_date:
+          type: string
+          format: date
+        notes:
+          type: string
+      required:
+      - customer
+      - validity_date
+    QuotationStatusEnum:
+      enum:
+      - draft
+      - sent
+      - confirmed
+      - canceled
+      type: string
+      description: |-
+        * `draft` - Draft
+        * `sent` - Sent
+        * `confirmed` - Confirmed
+        * `canceled` - Canceled
+    QuotationTemplate:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 255
+        plan:
+          type: integer
+          nullable: true
+        plan_name:
+          type: string
+          readOnly: true
+        validity_days:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          description: Validity of quotation in days from issue.
+        payment_term:
+          type: integer
+          nullable: true
+        payment_term_name:
+          type: string
+          readOnly: true
+        notes:
+          type: string
+        lines:
+          type: array
+          items:
+            $ref: '#/components/schemas/QuotationTemplateLine'
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - lines
+      - name
+      - payment_term_name
+      - plan_name
+      - updated_at
+    QuotationTemplateLine:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        template:
+          type: integer
+        product:
+          type: integer
+        product_name:
+          type: string
+          readOnly: true
+        variant:
+          type: integer
+          nullable: true
+        variant_sku:
+          type: string
+          readOnly: true
+        quantity:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        unit_price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          nullable: true
+          description: Override price. If null, automatically computes variant effective
+            price.
+      required:
+      - id
+      - product
+      - product_name
+      - template
+      - variant_sku
+    QuotationTemplateLineRequest:
+      type: object
+      properties:
+        template:
+          type: integer
+        product:
+          type: integer
+        variant:
+          type: integer
+          nullable: true
+        quantity:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        unit_price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          nullable: true
+          description: Override price. If null, automatically computes variant effective
+            price.
+      required:
+      - product
+      - template
+    QuotationTemplateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 255
+        plan:
+          type: integer
+          nullable: true
+        validity_days:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          description: Validity of quotation in days from issue.
+        payment_term:
+          type: integer
+          nullable: true
+        notes:
+          type: string
+      required:
+      - name
+    RefundPaymentRequest:
+      type: object
+      properties:
+        refund_amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        reason:
+          type: string
+          minLength: 1
+          default: Customer requested refund
+          maxLength: 255
     RevenueTrendItem:
       type: object
       properties:
@@ -3275,6 +6022,9 @@ components:
           allOf:
           - $ref: '#/components/schemas/Plan'
           readOnly: true
+        payment_term:
+          type: integer
+          nullable: true
         status:
           allOf:
           - $ref: '#/components/schemas/SubscriptionStatusEnum'
@@ -3307,6 +6057,16 @@ components:
           format: date-time
           readOnly: true
           nullable: true
+        lines:
+          type: array
+          items:
+            $ref: '#/components/schemas/SubscriptionLine'
+          readOnly: true
+        events:
+          type: array
+          items:
+            $ref: '#/components/schemas/SubscriptionEvent'
+          readOnly: true
         created_at:
           type: string
           format: date-time
@@ -3323,18 +6083,131 @@ components:
       - customer
       - customer_company
       - customer_email
+      - events
       - id
+      - lines
       - paused_at
       - plan
       - start_date
       - status
       - trial_end
       - updated_at
+    SubscriptionEvent:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        from_status:
+          type: string
+          maxLength: 20
+        to_status:
+          type: string
+          maxLength: 20
+        actor:
+          type: integer
+          nullable: true
+        actor_email:
+          type: string
+          readOnly: true
+        reason:
+          type: string
+          maxLength: 255
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - actor_email
+      - created_at
+      - id
+      - to_status
+    SubscriptionEventRequest:
+      type: object
+      properties:
+        from_status:
+          type: string
+          maxLength: 20
+        to_status:
+          type: string
+          minLength: 1
+          maxLength: 20
+        actor:
+          type: integer
+          nullable: true
+        reason:
+          type: string
+          maxLength: 255
+      required:
+      - to_status
+    SubscriptionLine:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        product:
+          type: integer
+        product_name:
+          type: string
+          readOnly: true
+        variant:
+          type: integer
+          nullable: true
+        variant_sku:
+          type: string
+          readOnly: true
+        quantity:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        unit_price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          description: Snapshot unit price including any variant extra price.
+        taxes:
+          type: array
+          items:
+            type: integer
+      required:
+      - id
+      - product
+      - product_name
+      - unit_price
+      - variant_sku
+    SubscriptionLineRequest:
+      type: object
+      properties:
+        product:
+          type: integer
+        variant:
+          type: integer
+          nullable: true
+        quantity:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        unit_price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          description: Snapshot unit price including any variant extra price.
+        taxes:
+          type: array
+          items:
+            type: integer
+      required:
+      - product
+      - unit_price
     SubscriptionRequest:
       type: object
       properties:
         customer:
           type: integer
+        payment_term:
+          type: integer
+          nullable: true
         start_date:
           type: string
           format: date
@@ -3357,6 +6230,57 @@ components:
         * `past_due` - Past Due
         * `canceled` - Canceled
         * `paused` - Paused
+    Tax:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 100
+        rate:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,2}(?:\.\d{0,4})?$
+          description: Tax rate. E.g. 0.1800 for 18% GST or 18.0000
+        kind:
+          $ref: '#/components/schemas/KindEnum'
+        is_active:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - name
+      - rate
+      - updated_at
+    TaxRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+        rate:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,2}(?:\.\d{0,4})?$
+          description: Tax rate. E.g. 0.1800 for 18% GST or 18.0000
+        kind:
+          $ref: '#/components/schemas/KindEnum'
+        is_active:
+          type: boolean
+      required:
+      - name
+      - rate
     TierEnum:
       enum:
       - starter
@@ -3376,6 +6300,16 @@ components:
         dry_run:
           type: boolean
           default: false
+    TypeEnum:
+      enum:
+      - service
+      - consu
+      - product
+      type: string
+      description: |-
+        * `service` - Service
+        * `consu` - Consumable
+        * `product` - Storable Product
     User:
       type: object
       properties:

@@ -55,3 +55,8 @@ class RecordPaymentSerializer(serializers.Serializer):
         if not Invoice.objects.filter(id=value).exists():
             raise serializers.ValidationError("Invoice with this ID does not exist.")
         return value
+
+
+class RefundPaymentSerializer(serializers.Serializer):
+    refund_amount = serializers.DecimalField(max_digits=12, decimal_places=2, required=False)
+    reason = serializers.CharField(max_length=255, required=False, default="Customer requested refund")

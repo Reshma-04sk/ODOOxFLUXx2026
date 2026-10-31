@@ -66,3 +66,25 @@ class InvoiceTests(TestCase):
 
         with self.assertRaises(InvalidStateTransitionError):
             InvoiceService.void_invoice(invoice)
+
+    def test_receipt_endpoint_json_and_html(self):
+        """Receipt endpoint returns full invoice JSON by default or formatted HTML with ?format=html."""
+        invoice = InvoiceService.create_invoice(
+            customer=self.customer,
+            line_items_data=[{"description": "Pro Tier Monthly", "quantity": 1, "unit_price": Decimal("2499.00")}],
+            tax_rate=Decimal("0.18"),
+        )
+        receipt_url = reverse("invoices:invoice-receipt", kwargs={"pk": invoice.id})
+
+        # JSON response
+        res_json = self.client.get(receipt_url)
+        self.assertEqual(res_json.status_code, status.HTTP_200_OK)
+        self.assertEqual(res_json.data["invoice_number"], invoice.invoice_number)
+        self.assertEqual(len(res_json.data["line_items"]), 1)
+
+        # HTML response
+        res_html = self.client.get(f"{receipt_url}?export=html")
+        self.assertEqual(res_html.status_code, status.HTTP_200_OK)
+        self.assertIn("text/html", res_html.headers["Content-Type"])
+        self.assertIn(invoice.invoice_number, res_html.content.decode())
+        self.assertIn("Brightloop Software Technologies Pvt Ltd", res_html.content.decode())

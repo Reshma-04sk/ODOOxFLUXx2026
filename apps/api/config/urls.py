@@ -9,9 +9,14 @@ from drf_spectacular.views import (
     SpectacularRedocView,
     SpectacularSwaggerView,
 )
+from common.views import HealthCheckView
 
 urlpatterns = [
     path("admin/", admin.site.urls),
+
+    # Health Check endpoints (for Render, Docker, monitoring)
+    path("api/health/", HealthCheckView.as_view(), name="health-check"),
+    path("healthz", HealthCheckView.as_view(), name="healthz"),
 
     # OpenAPI Schema & Interactive API Documentation
     path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
@@ -22,6 +27,7 @@ urlpatterns = [
     path("api/v1/accounts/", include("accounts.urls", namespace="accounts")),
     path("api/v1/customers/", include("customers.urls", namespace="customers")),
     path("api/v1/plans/", include("plans.urls", namespace="plans")),
+    path("api/v1/catalog/", include("catalog.urls", namespace="catalog")),
     path("api/v1/subscriptions/", include("subscriptions.urls", namespace="subscriptions")),
     path("api/v1/discounts/", include("discounts.urls", namespace="discounts")),
     path("api/v1/invoices/", include("invoices.urls", namespace="invoices")),

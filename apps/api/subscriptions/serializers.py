@@ -1,15 +1,51 @@
 from rest_framework import serializers
-from .models import Subscription
+from .models import Subscription, SubscriptionLine, SubscriptionEvent
 from plans.serializers import PlanSerializer
 from customers.serializers import CustomerSerializer
 from plans.models import Plan
 from customers.models import Customer
 
 
+class SubscriptionLineSerializer(serializers.ModelSerializer):
+    product_name = serializers.CharField(source="product.name", read_only=True)
+    variant_sku = serializers.CharField(source="variant.sku", read_only=True, default=None)
+
+    class Meta:
+        model = SubscriptionLine
+        fields = [
+            "id",
+            "product",
+            "product_name",
+            "variant",
+            "variant_sku",
+            "quantity",
+            "unit_price",
+            "taxes",
+        ]
+
+
+class SubscriptionEventSerializer(serializers.ModelSerializer):
+    actor_email = serializers.CharField(source="actor.email", read_only=True, default=None)
+
+    class Meta:
+        model = SubscriptionEvent
+        fields = [
+            "id",
+            "from_status",
+            "to_status",
+            "actor",
+            "actor_email",
+            "reason",
+            "created_at",
+        ]
+
+
 class SubscriptionSerializer(serializers.ModelSerializer):
     plan = PlanSerializer(read_only=True)
     customer_company = serializers.CharField(source="customer.company_name", read_only=True)
     customer_email = serializers.CharField(source="customer.email", read_only=True)
+    lines = SubscriptionLineSerializer(many=True, read_only=True)
+    events = SubscriptionEventSerializer(many=True, read_only=True)
 
     class Meta:
         model = Subscription
@@ -19,6 +55,7 @@ class SubscriptionSerializer(serializers.ModelSerializer):
             "customer_company",
             "customer_email",
             "plan",
+            "payment_term",
             "status",
             "start_date",
             "current_period_start",
@@ -27,6 +64,8 @@ class SubscriptionSerializer(serializers.ModelSerializer):
             "cancel_at_period_end",
             "canceled_at",
             "paused_at",
+            "lines",
+            "events",
             "created_at",
             "updated_at",
         ]
@@ -40,9 +79,12 @@ class SubscriptionSerializer(serializers.ModelSerializer):
             "trial_end",
             "canceled_at",
             "paused_at",
+            "lines",
+            "events",
             "created_at",
             "updated_at",
         ]
+
 
 
 class CreateSubscriptionSerializer(serializers.Serializer):

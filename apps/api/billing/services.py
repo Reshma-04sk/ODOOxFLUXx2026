@@ -70,11 +70,22 @@ class BillingEngine:
                     if already_billed:
                         continue
 
-                    # If subscription is set to cancel at period end, transition to canceled
-                    if sub.cancel_at_period_end:
+                    # If subscription is set to cancel at period end, or plan is non-renewable or auto_close
+                    if sub.cancel_at_period_end or sub.plan.auto_close or not sub.plan.renewable:
+                        from subscriptions.models import SubscriptionEvent
+                        old_status = sub.status
                         sub.status = Subscription.Status.CANCELED
                         sub.canceled_at = timezone.now()
                         sub.save(update_fields=["status", "canceled_at", "updated_at"])
+                        reason = "Auto-closed at period end" if sub.plan.auto_close else (
+                            "Plan does not permit renewal" if not sub.plan.renewable else "Canceled at period end"
+                        )
+                        SubscriptionEvent.objects.create(
+                            subscription=sub,
+                            from_status=old_status,
+                            to_status=Subscription.Status.CANCELED,
+                            reason=reason,
+                        )
                         continue
 
                     # Generate renewal invoice with line items
